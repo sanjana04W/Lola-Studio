@@ -14,66 +14,98 @@ import {
   Database,
   CheckCircle2,
   Phone,
-  Eye,
   RefreshCw,
+  Package,
+  ChevronRight,
 } from 'lucide-react';
 
-export default function AdminDashboardPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
-  const [seedMessage, setSeedMessage] = useState('');
+/* ── Status badge helper ── */
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, string> = {
+    Pending:    'bg-amber-50 text-amber-700 border-amber-200',
+    Processing: 'bg-blue-50 text-blue-700 border-blue-200',
+    Dispatched: 'bg-purple-50 text-purple-700 border-purple-200',
+    Delivered:  'bg-emerald-50 text-emerald-700 border-emerald-200',
+    Cancelled:  'bg-red-50 text-red-600 border-red-200',
+  };
+  return (
+    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${map[status] ?? 'bg-stone-50 text-stone-600 border-stone-200'}`}>
+      {status}
+    </span>
+  );
+}
 
-  const loadData = async () => {
+/* ── Metric card ── */
+function MetricCard({
+  label, value, sub, icon: Icon, accent,
+}: {
+  label: string; value: string; sub?: React.ReactNode;
+  icon: React.ElementType; accent: string;
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-[#E8E4DC] p-5 shadow-[0_1px_4px_rgba(0,0,0,0.06)] space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#9E9A93]">{label}</p>
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${accent}`}>
+          <Icon className="w-4 h-4" />
+        </div>
+      </div>
+      <p className="font-serif text-2xl font-bold text-[#22201E] leading-none">{value}</p>
+      {sub && <div className="text-[11px] text-[#8E8A80]">{sub}</div>}
+    </div>
+  );
+}
+
+export default function AdminDashboardPage() {
+  const [orders,   setOrders]   = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [seeding,  setSeeding]  = useState(false);
+  const [seedMsg,  setSeedMsg]  = useState('');
+
+  const load = async () => {
     setLoading(true);
-    const [fetchedOrders, fetchedProds] = await Promise.all([getOrders(), getProducts()]);
-    setOrders(fetchedOrders);
-    setProducts(fetchedProds);
+    const [o, p] = await Promise.all([getOrders(), getProducts()]);
+    setOrders(o);
+    setProducts(p);
     setLoading(false);
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const handleSeed = async () => {
-    if (!confirm('This will seed the initial categories, 24 products, and store settings into Firestore. Proceed?')) return;
+    if (!confirm('Seed initial 24 products, categories & settings into Firestore?')) return;
     setSeeding(true);
-    const res = await seedDatabase();
-    setSeedMessage(res.message);
+    const r = await seedDatabase();
+    setSeedMsg(r.message);
     setSeeding(false);
-    loadData();
-    setTimeout(() => setSeedMessage(''), 5000);
+    load();
+    setTimeout(() => setSeedMsg(''), 5000);
   };
 
-  // Metrics calculation
-  const totalRevenue = orders.reduce((sum, o) => (o.status !== 'Cancelled' ? sum + o.total : sum), 0);
-  const pendingOrders = orders.filter((o) => o.status === 'Pending').length;
-  const processingOrders = orders.filter((o) => o.status === 'Processing').length;
-  const deliveredOrders = orders.filter((o) => o.status === 'Delivered').length;
-
-  const lowStockProducts = products.filter((p) => p.stockQuantity > 0 && p.stockQuantity <= 3);
-  const outOfStockProducts = products.filter((p) => p.stockQuantity <= 0);
+  const totalRevenue    = orders.reduce((s, o) => o.status !== 'Cancelled' ? s + o.total : s, 0);
+  const pendingOrders   = orders.filter(o => o.status === 'Pending').length;
+  const processingOrders= orders.filter(o => o.status === 'Processing').length;
+  const deliveredOrders = orders.filter(o => o.status === 'Delivered').length;
+  const lowStock        = products.filter(p => p.stockQuantity > 0 && p.stockQuantity <= 3);
+  const outStock        = products.filter(p => p.stockQuantity <= 0);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Top Banner / Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-brand-200">
+
+      {/* ── Page header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-brand-950">
-            Operations Dashboard
-          </h1>
-          <p className="text-xs text-brand-600 mt-1">
-            Real-time sales, order fulfillment, and inventory analytics for Lola Studio.
-          </p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#C5A059] mb-1">Lola Studio</p>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#22201E]">Operations Dashboard</h1>
+          <p className="text-xs text-[#8E8A80] mt-1">Real-time sales, fulfilment & inventory overview.</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
-            onClick={loadData}
-            className="p-2.5 rounded-xl bg-white border border-brand-200 text-brand-700 hover:text-brand-950 hover:bg-brand-50 transition-colors"
-            title="Refresh Data"
+            onClick={load}
+            className="p-2.5 rounded-xl bg-white border border-[#E8E4DC] text-[#7A756B] hover:text-[#22201E] hover:border-[#C5A059]/40 transition-all shadow-sm"
+            title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -81,168 +113,128 @@ export default function AdminDashboardPage() {
           <button
             onClick={handleSeed}
             disabled={seeding}
-            className="px-4 py-2.5 rounded-xl bg-brand-100 hover:bg-brand-200 text-brand-900 text-xs font-bold flex items-center gap-1.5 transition-colors border border-brand-200 shadow-sm"
+            className="px-4 py-2.5 rounded-xl bg-white border border-[#E8E4DC] text-[#7A756B] text-xs font-semibold flex items-center gap-1.5 hover:border-[#C5A059]/40 transition-all shadow-sm"
           >
-            <Database className="w-4 h-4 text-brand-700" />
-            <span>{seeding ? 'Seeding Firestore...' : 'Sync/Seed DB'}</span>
+            <Database className="w-3.5 h-3.5 text-[#C5A059]" />
+            {seeding ? 'Seeding…' : 'Sync / Seed DB'}
           </button>
 
-          <a
+          <Link
             href="/admin/products?action=new"
-            className="px-4 py-2.5 rounded-xl bg-brand-900 hover:bg-brand-800 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-soft"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm text-[#14120E]"
+            style={{ background: 'linear-gradient(135deg, #C8A252, #D5B560)' }}
           >
             <Plus className="w-4 h-4" />
-            <span>Add Product</span>
-          </a>
+            Add Product
+          </Link>
         </div>
       </div>
 
-      {seedMessage && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+      {/* Seed success toast */}
+      {seedMsg && (
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-          <span>{seedMessage}</span>
+          {seedMsg}
         </div>
       )}
 
-      {/* 4 Metric Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Revenue */}
-        <div className="p-6 rounded-3xl bg-white border border-brand-200 shadow-soft space-y-2">
-          <div className="flex items-center justify-between text-xs text-brand-500 font-semibold uppercase tracking-wider">
-            <span>Total Gross Revenue</span>
-            <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <span className="font-serif text-2xl sm:text-3xl font-bold text-brand-950 block">
-            LKR {totalRevenue.toLocaleString()}
-          </span>
-          <span className="text-[11px] text-emerald-700 font-medium">
-            Cash on Delivery processed
-          </span>
-        </div>
-
-        {/* Total Orders */}
-        <div className="p-6 rounded-3xl bg-white border border-brand-200 shadow-soft space-y-2">
-          <div className="flex items-center justify-between text-xs text-brand-500 font-semibold uppercase tracking-wider">
-            <span>Total Orders Placed</span>
-            <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-800 flex items-center justify-center">
-              <ShoppingBag className="w-4 h-4" />
-            </div>
-          </div>
-          <span className="font-serif text-2xl sm:text-3xl font-bold text-brand-950 block">
-            {orders.length} Orders
-          </span>
-          <span className="text-[11px] text-brand-600">
-            {deliveredOrders} delivered • {processingOrders} processing
-          </span>
-        </div>
-
-        {/* Pending Action Orders */}
-        <div className="p-6 rounded-3xl bg-white border border-brand-200 shadow-soft space-y-2">
-          <div className="flex items-center justify-between text-xs text-brand-500 font-semibold uppercase tracking-wider">
-            <span>Pending Review</span>
-            <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <span className="font-serif text-2xl sm:text-3xl font-bold text-amber-700 block">
-            {pendingOrders} Orders
-          </span>
-          <a href="/admin/orders?status=Pending" className="text-[11px] text-brand-800 font-bold underline">
-            Review awaiting orders →
-          </a>
-        </div>
-
-        {/* Low Stock Alerts */}
-        <div className="p-6 rounded-3xl bg-white border border-brand-200 shadow-soft space-y-2">
-          <div className="flex items-center justify-between text-xs text-brand-500 font-semibold uppercase tracking-wider">
-            <span>Low Stock Items (&lt; 3)</span>
-            <div className="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          </div>
-          <span className="font-serif text-2xl sm:text-3xl font-bold text-red-600 block">
-            {lowStockProducts.length + outOfStockProducts.length} SKUs
-          </span>
-          <a href="/admin/categories" className="text-[11px] text-red-700 font-bold underline">
-            View inventory report →
-          </a>
-        </div>
+      {/* ── 4 Metric cards ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard
+          label="Total Revenue"
+          value={`LKR ${totalRevenue.toLocaleString()}`}
+          sub="Cash on Delivery collected"
+          icon={TrendingUp}
+          accent="bg-emerald-50 text-emerald-700"
+        />
+        <MetricCard
+          label="Total Orders"
+          value={`${orders.length}`}
+          sub={`${deliveredOrders} delivered · ${processingOrders} processing`}
+          icon={ShoppingBag}
+          accent="bg-[#C5A059]/10 text-[#C5A059]"
+        />
+        <MetricCard
+          label="Pending Review"
+          value={`${pendingOrders}`}
+          sub={
+            <Link href="/admin/orders?status=Pending" className="text-[#C5A059] font-semibold hover:underline flex items-center gap-1">
+              Review now <ArrowRight className="w-3 h-3" />
+            </Link>
+          }
+          icon={Clock}
+          accent="bg-amber-50 text-amber-700"
+        />
+        <MetricCard
+          label="Low Stock Alerts"
+          value={`${lowStock.length + outStock.length} SKUs`}
+          sub={
+            <Link href="/admin/categories" className="text-red-600 font-semibold hover:underline flex items-center gap-1">
+              View inventory <ArrowRight className="w-3 h-3" />
+            </Link>
+          }
+          icon={AlertTriangle}
+          accent="bg-red-50 text-red-600"
+        />
       </div>
 
-      {/* Two Column Layout: Recent Orders + Quick Inventory Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Recent Orders Table */}
-        <div className="lg:col-span-8 bg-white rounded-3xl border border-brand-200 p-6 shadow-soft space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-brand-100">
-            <h2 className="font-serif text-lg font-bold text-brand-950">
-              Recent Order Activity
-            </h2>
-            <a
+      {/* ── Two-column: recent orders + stock alerts ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        {/* Recent Orders */}
+        <div className="lg:col-span-8 bg-white rounded-2xl border border-[#E8E4DC] shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#F0EDE8] flex items-center justify-between">
+            <h2 className="font-serif text-base font-bold text-[#22201E]">Recent Orders</h2>
+            <Link
               href="/admin/orders"
-              className="text-xs font-bold uppercase tracking-wider text-brand-800 hover:text-brand-950 flex items-center gap-1"
+              className="text-xs font-semibold text-[#C5A059] hover:underline flex items-center gap-1"
             >
-              <span>View All</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
+              View all <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
           {orders.length === 0 ? (
-            <div className="py-12 text-center text-xs text-brand-500">
-              No orders received yet. Place a test order through the storefront!
+            <div className="py-16 text-center">
+              <ShoppingBag className="w-8 h-8 text-[#D8D4CC] mx-auto mb-3" />
+              <p className="text-xs text-[#A09890]">No orders yet. Place a test order from the storefront!</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-brand-100 text-brand-400 uppercase text-[10px] tracking-wider">
-                    <th className="pb-3 font-semibold">Order ID</th>
-                    <th className="pb-3 font-semibold">Customer</th>
-                    <th className="pb-3 font-semibold">District</th>
-                    <th className="pb-3 font-semibold">Amount (COD)</th>
-                    <th className="pb-3 font-semibold">Status</th>
-                    <th className="pb-3 font-semibold text-right">Actions</th>
+                  <tr className="bg-[#FDFCFB] border-b border-[#F0EDE8] text-[#A09890] uppercase text-[10px] tracking-widest">
+                    <th className="py-3 px-4 font-semibold">Order</th>
+                    <th className="py-3 px-4 font-semibold">Customer</th>
+                    <th className="py-3 px-4 font-semibold">District</th>
+                    <th className="py-3 px-4 font-semibold">Amount</th>
+                    <th className="py-3 px-4 font-semibold">Status</th>
+                    <th className="py-3 px-4 font-semibold text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-brand-50">
-                  {orders.slice(0, 6).map((order) => (
-                    <tr key={order.id} className="hover:bg-brand-50/50 transition-colors">
-                      <td className="py-3.5 font-mono font-semibold text-brand-950">
+                <tbody className="divide-y divide-[#F5F2ED]">
+                  {orders.slice(0, 7).map((order) => (
+                    <tr key={order.id} className="hover:bg-[#FDFCFB] transition-colors">
+                      <td className="py-3 px-4 font-mono font-semibold text-[#22201E] text-[11px]">
                         {order.orderNumber}
                       </td>
-                      <td className="py-3.5">
-                        <span className="font-semibold text-brand-900 block">{order.customer.name}</span>
-                        <span className="text-[11px] text-brand-500">{order.customer.phone}</span>
+                      <td className="py-3 px-4">
+                        <p className="font-semibold text-[#22201E]">{order.customer.name}</p>
+                        <p className="text-[#A09890] text-[10px]">{order.customer.phone}</p>
                       </td>
-                      <td className="py-3.5 text-brand-700">{order.customer.district}</td>
-                      <td className="py-3.5 font-bold text-brand-950">
+                      <td className="py-3 px-4 text-[#7A756B]">{order.customer.district}</td>
+                      <td className="py-3 px-4 font-bold text-[#22201E]">
                         LKR {order.total.toLocaleString()}
                       </td>
-                      <td className="py-3.5">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            order.status === 'Pending'
-                              ? 'bg-amber-100 text-amber-800'
-                              : order.status === 'Processing'
-                              ? 'bg-blue-100 text-blue-800'
-                              : order.status === 'Dispatched'
-                              ? 'bg-purple-100 text-purple-800'
-                              : order.status === 'Delivered'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {order.status}
-                        </span>
+                      <td className="py-3 px-4">
+                        <StatusBadge status={order.status} />
                       </td>
-                      <td className="py-3.5 text-right">
-                        <a
+                      <td className="py-3 px-4 text-right">
+                        <Link
                           href={`/admin/orders?search=${order.orderNumber}`}
-                          className="px-2.5 py-1.5 rounded-lg bg-brand-100 text-brand-900 hover:bg-brand-200 text-[11px] font-semibold"
+                          className="px-3 py-1.5 rounded-lg bg-[#F5F2ED] hover:bg-[#EDE9E2] text-[#4A4640] text-[11px] font-semibold inline-flex items-center gap-1 transition-colors"
                         >
-                          Manage
-                        </a>
+                          Manage <ChevronRight className="w-3 h-3" />
+                        </Link>
                       </td>
                     </tr>
                   ))}
@@ -252,68 +244,88 @@ export default function AdminDashboardPage() {
           )}
         </div>
 
-        {/* Quick Inventory Stock Alert Box */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-3xl border border-brand-200 p-6 shadow-soft space-y-4">
-            <h2 className="font-serif text-lg font-bold text-brand-950 pb-3 border-b border-brand-100 flex items-center justify-between">
-              <span>Low-Stock Monitor</span>
-              <span className="text-xs text-red-600 font-bold">
-                {lowStockProducts.length + outOfStockProducts.length} Need Action
-              </span>
-            </h2>
+        {/* Right column */}
+        <div className="lg:col-span-4 space-y-4">
 
-            {lowStockProducts.length === 0 && outOfStockProducts.length === 0 ? (
-              <p className="text-xs text-brand-500 py-4 text-center">
-                All inventory healthy with 4+ units in stock.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {outOfStockProducts.map((p) => (
-                  <div key={p.id} className="p-3 rounded-2xl bg-red-50/70 border border-red-200 flex justify-between items-center text-xs">
-                    <div>
-                      <h4 className="font-semibold text-brand-950 truncate max-w-[170px]">{p.name}</h4>
-                      <span className="text-[10px] text-red-700 font-bold uppercase">OUT OF STOCK (0 units)</span>
+          {/* Low Stock Monitor */}
+          <div className="bg-white rounded-2xl border border-[#E8E4DC] shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden">
+            <div className="px-5 py-4 border-b border-[#F0EDE8] flex items-center justify-between">
+              <h2 className="font-serif text-sm font-bold text-[#22201E]">Stock Alerts</h2>
+              <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                {lowStock.length + outStock.length} items
+              </span>
+            </div>
+
+            <div className="p-4">
+              {lowStock.length === 0 && outStock.length === 0 ? (
+                <div className="py-6 text-center">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-400 mx-auto mb-2" />
+                  <p className="text-xs text-[#A09890]">All inventory healthy (4+ units).</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {outStock.map((p) => (
+                    <div key={p.id} className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-[#22201E] text-xs truncate">{p.name}</p>
+                        <p className="text-[10px] text-red-600 font-bold uppercase">Out of stock</p>
+                      </div>
+                      <Link href={`/admin/products?edit=${p.id}`}
+                        className="text-[11px] font-bold text-red-700 hover:underline flex-shrink-0">
+                        Restock
+                      </Link>
                     </div>
-                    <a
-                      href={`/admin/products?edit=${p.id}`}
-                      className="px-2.5 py-1 rounded-lg bg-white border border-red-200 text-red-700 text-[11px] font-bold"
-                    >
-                      Restock
-                    </a>
-                  </div>
-                ))}
-                {lowStockProducts.map((p) => (
-                  <div key={p.id} className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 flex justify-between items-center text-xs">
-                    <div>
-                      <h4 className="font-semibold text-brand-950 truncate max-w-[170px]">{p.name}</h4>
-                      <span className="text-[10px] text-amber-800 font-bold uppercase">Only {p.stockQuantity} left</span>
+                  ))}
+                  {lowStock.map((p) => (
+                    <div key={p.id} className="p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-[#22201E] text-xs truncate">{p.name}</p>
+                        <p className="text-[10px] text-amber-700 font-bold uppercase">{p.stockQuantity} left</p>
+                      </div>
+                      <Link href={`/admin/products?edit=${p.id}`}
+                        className="text-[11px] font-bold text-amber-800 hover:underline flex-shrink-0">
+                        Adjust
+                      </Link>
                     </div>
-                    <a
-                      href={`/admin/products?edit=${p.id}`}
-                      className="px-2.5 py-1 rounded-lg bg-white border border-amber-200 text-amber-800 text-[11px] font-bold"
-                    >
-                      Adjust
-                    </a>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Quick Support Card */}
-          <div className="p-6 rounded-3xl bg-brand-950 text-white space-y-3">
-            <h3 className="font-serif text-base font-bold">Lola Studio Hotline</h3>
-            <p className="text-xs text-brand-300">
-              Negombo Workshop: 075 148 3613
-            </p>
+          {/* Quick links */}
+          <div className="bg-white rounded-2xl border border-[#E8E4DC] shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-5 space-y-2">
+            <h3 className="text-xs font-bold text-[#22201E] uppercase tracking-wider mb-3">Quick Actions</h3>
+            {[
+              { label: 'Add New Product',  href: '/admin/products?action=new', icon: Package },
+              { label: 'Pending Orders',   href: '/admin/orders?status=Pending', icon: Clock },
+              { label: 'Customer List',    href: '/admin/customers', icon: ShoppingBag },
+            ].map(({ label, href, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-[#F5F2ED] text-xs text-[#4A4640] font-semibold transition-colors group"
+              >
+                <Icon className="w-3.5 h-3.5 text-[#C5A059]" />
+                {label}
+                <ChevronRight className="w-3.5 h-3.5 ml-auto text-[#C4C0B8] group-hover:text-[#C5A059] transition-colors" />
+              </Link>
+            ))}
+          </div>
+
+          {/* Workshop contact */}
+          <div className="rounded-2xl p-5 space-y-2 text-white"
+               style={{ background: 'linear-gradient(135deg, #22201E 0%, #2C2A25 100%)' }}>
+            <p className="text-[10px] uppercase tracking-widest text-[#C5A059] font-semibold">Workshop Hotline</p>
+            <p className="font-serif text-sm font-bold">Lola Studio — Negombo</p>
             <a
               href="https://wa.me/94751483613"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-zen-gold hover:underline"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#C5A059] hover:underline"
             >
               <Phone className="w-3.5 h-3.5" />
-              <span>Launch Studio WhatsApp</span>
+              075 148 3613 · WhatsApp
             </a>
           </div>
         </div>

@@ -3,28 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { getCustomers, getOrders } from '@/services/storeService';
 import { Customer } from '@/types';
-import {
-  Users,
-  Search,
-  MessageCircle,
-  Phone,
-  Sparkles,
-  MapPin,
-  Calendar,
-  DollarSign,
-  ShoppingBag,
-} from 'lucide-react';
+import { Users, Search, MessageCircle, Sparkles } from 'lucide-react';
 
 export default function CustomerManagementPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading,   setLoading]   = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     async function load() {
       setLoading(true);
       const list = await getCustomers();
-      // If Firestore customer collection was empty, build from orders
       if (list.length === 0) {
         const orders = await getOrders();
         const map = new Map<string, Customer>();
@@ -72,147 +61,115 @@ export default function CustomerManagementPage() {
   });
 
   const totalCustomerSpend = customers.reduce((sum, c) => sum + c.totalSpent, 0);
-  const repeatCount = customers.filter((c) => c.isRepeatCustomer).length;
+  const repeatCount        = customers.filter((c) => c.isRepeatCustomer).length;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-brand-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-brand-950">
-            Customer Directory & CRM
-          </h1>
-          <p className="text-xs text-brand-600 mt-1">
-            Build lasting relationships with customers gained from your social media and website orders.
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#C5A059] mb-1">CRM</p>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#22201E]">Customer Directory</h1>
+          <p className="text-xs text-[#8E8A80] mt-1">
+            Build lasting relationships with customers from social media and website orders.
           </p>
         </div>
       </div>
 
       {/* KPI Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="p-6 rounded-3xl bg-white border border-brand-200 shadow-soft">
-          <span className="text-xs text-brand-500 font-semibold uppercase tracking-wider block">
-            Total Unique Customers
-          </span>
-          <span className="font-serif text-2xl sm:text-3xl font-bold text-brand-950 mt-1 block">
-            {customers.length} Contacts
-          </span>
-          <span className="text-[11px] text-brand-600 mt-1 block">
-            Acquired via social media & website COD checkout
-          </span>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-5 rounded-2xl bg-white border border-[#E8E4DC] shadow-[0_1px_4px_rgba(0,0,0,0.06)] space-y-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#9E9A93]">Total Unique Customers</p>
+          <p className="font-serif text-2xl font-bold text-[#22201E]">{customers.length} Contacts</p>
+          <p className="text-[11px] text-[#8E8A80]">Acquired via social media &amp; website COD</p>
         </div>
-
-        <div className="p-6 rounded-3xl bg-white border border-brand-200 shadow-soft">
-          <span className="text-xs text-brand-500 font-semibold uppercase tracking-wider block">
-            Repeat Buyer Loyalty
-          </span>
-          <span className="font-serif text-2xl sm:text-3xl font-bold text-emerald-700 mt-1 block">
-            {repeatCount} Repeat Clients
-          </span>
-          <span className="text-[11px] text-emerald-600 mt-1 block">
-            High affinity for new product releases
-          </span>
+        <div className="p-5 rounded-2xl bg-white border border-[#E8E4DC] shadow-[0_1px_4px_rgba(0,0,0,0.06)] space-y-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#9E9A93]">Repeat Buyer Loyalty</p>
+          <p className="font-serif text-2xl font-bold text-emerald-700">{repeatCount} Repeat Clients</p>
+          <p className="text-[11px] text-[#8E8A80]">High affinity for new product releases</p>
         </div>
-
-        <div className="p-6 rounded-3xl bg-white border border-brand-200 shadow-soft">
-          <span className="text-xs text-brand-500 font-semibold uppercase tracking-wider block">
-            Lifetime Customer Value
-          </span>
-          <span className="font-serif text-2xl sm:text-3xl font-bold text-brand-950 mt-1 block">
-            LKR {totalCustomerSpend.toLocaleString()}
-          </span>
-          <span className="text-[11px] text-brand-600 mt-1 block">
-            Average LKR {customers.length > 0 ? Math.round(totalCustomerSpend / customers.length).toLocaleString() : 0} per client
-          </span>
+        <div className="p-5 rounded-2xl bg-white border border-[#E8E4DC] shadow-[0_1px_4px_rgba(0,0,0,0.06)] space-y-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#9E9A93]">Lifetime Customer Value</p>
+          <p className="font-serif text-2xl font-bold text-[#22201E]">LKR {totalCustomerSpend.toLocaleString()}</p>
+          <p className="text-[11px] text-[#8E8A80]">Avg LKR {customers.length > 0 ? Math.round(totalCustomerSpend / customers.length).toLocaleString() : 0} per client</p>
         </div>
       </div>
 
-      {/* Search Input Bar */}
-      <div className="p-4 rounded-2xl bg-white border border-brand-200 shadow-soft flex items-center justify-between">
+      {/* Search */}
+      <div className="bg-white border border-[#E8E4DC] rounded-2xl p-4 flex items-center justify-between shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
         <div className="relative w-full sm:w-96">
           <input
             type="text"
-            placeholder="Search by customer name, phone, or district..."
+            placeholder="Search by customer name, phone, or district…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs bg-brand-50 border border-brand-200 rounded-xl py-2.5 pl-9 pr-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full text-xs bg-[#FDFCFB] border border-[#E8E4DC] rounded-xl py-2.5 pl-9 pr-3 text-[#22201E] placeholder-[#C4C0B8] focus:outline-none focus:ring-2 focus:ring-[#C5A059]/30 focus:border-[#C5A059] transition-all"
           />
-          <Search className="w-4 h-4 text-brand-400 absolute left-3 top-3 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#C4C0B8] absolute left-3 top-2.5 pointer-events-none" />
         </div>
-        <span className="text-xs text-brand-500 hidden sm:inline">
-          {filtered.length} customers listed
-        </span>
+        <span className="text-xs text-[#A09890] hidden sm:inline">{filtered.length} customers</span>
       </div>
 
-      {/* Customers Table */}
-      <div className="bg-white rounded-3xl border border-brand-200 shadow-soft overflow-hidden">
-        {filtered.length === 0 ? (
-          <div className="py-16 text-center text-xs text-brand-500">
-            No customers found in CRM database yet. Orders placed on the website automatically register here!
+      {/* Table */}
+      <div className="bg-white rounded-2xl border border-[#E8E4DC] shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden">
+        {loading ? (
+          <div className="py-16 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-[#C5A059] border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="py-16 text-center">
+            <Users className="w-8 h-8 text-[#D8D4CC] mx-auto mb-3" />
+            <p className="text-xs text-[#A09890]">No customers yet. Orders placed on the website register here automatically.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-brand-50/70 border-b border-brand-100 text-brand-500 uppercase text-[10px] tracking-wider">
-                  <th className="py-3.5 px-4 font-semibold">Customer</th>
-                  <th className="py-3.5 px-4 font-semibold">Location</th>
-                  <th className="py-3.5 px-4 font-semibold">Orders Count</th>
-                  <th className="py-3.5 px-4 font-semibold">Total Spent (LKR)</th>
-                  <th className="py-3.5 px-4 font-semibold">Last Order Date</th>
-                  <th className="py-3.5 px-4 font-semibold">Loyalty Badge</th>
-                  <th className="py-3.5 px-4 font-semibold text-right">Quick Contact</th>
+                <tr className="bg-[#FDFCFB] border-b border-[#F0EDE8] text-[#A09890] uppercase text-[10px] tracking-widest">
+                  <th className="py-3 px-4 font-semibold">Customer</th>
+                  <th className="py-3 px-4 font-semibold">Location</th>
+                  <th className="py-3 px-4 font-semibold">Orders</th>
+                  <th className="py-3 px-4 font-semibold">Total Spent</th>
+                  <th className="py-3 px-4 font-semibold">Last Order</th>
+                  <th className="py-3 px-4 font-semibold">Loyalty</th>
+                  <th className="py-3 px-4 font-semibold text-right">Contact</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-100">
+              <tbody className="divide-y divide-[#F5F2ED]">
                 {filtered.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-brand-50/40 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-brand-950 block">{customer.name}</span>
-                      <span className="text-[11px] text-brand-500">{customer.email || 'No email'}</span>
+                  <tr key={customer.id} className="hover:bg-[#FDFCFB] transition-colors">
+                    <td className="py-3 px-4">
+                      <p className="font-bold text-[#22201E]">{customer.name}</p>
+                      <p className="text-[10px] text-[#A09890]">{customer.email || 'No email'}</p>
                     </td>
-                    <td className="py-3.5 px-4 text-brand-700">
-                      <span className="font-medium block">{customer.district} District</span>
-                      <span className="text-[10px] text-brand-400 truncate max-w-[150px] block">
-                        {customer.address}
-                      </span>
+                    <td className="py-3 px-4">
+                      <p className="font-medium text-[#4A4640]">{customer.district} District</p>
+                      <p className="text-[10px] text-[#A09890] truncate max-w-[140px]">{customer.address}</p>
                     </td>
-                    <td className="py-3.5 px-4 font-semibold text-brand-950">
+                    <td className="py-3 px-4 font-semibold text-[#22201E]">
                       {customer.totalOrders} {customer.totalOrders === 1 ? 'order' : 'orders'}
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-brand-950">
-                      LKR {customer.totalSpent.toLocaleString()}
+                    <td className="py-3 px-4 font-bold text-[#22201E]">LKR {customer.totalSpent.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-[#7A756B]">
+                      {new Date(customer.lastOrderDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
-                    <td className="py-3.5 px-4 text-brand-600">
-                      {new Date(customer.lastOrderDate).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-3 px-4">
                       {customer.isRepeatCustomer ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-zen-gold/20 text-brand-950 text-[10px] font-bold uppercase tracking-wider">
-                          <Sparkles className="w-3 h-3 text-zen-gold" />
-                          <span>VIP Repeat</span>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-[#C5A059]/20"
+                          style={{ background: 'rgba(197,160,89,0.1)', color: '#22201E' }}>
+                          <Sparkles className="w-3 h-3 text-[#C5A059]" /> VIP Repeat
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-full bg-brand-100 text-brand-700 text-[10px] font-semibold">
-                          First-Time
-                        </span>
+                        <span className="px-2.5 py-1 rounded-full bg-[#F0EDE8] text-[#7A756B] text-[10px] font-semibold">First-Time</span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3 px-4 text-right">
                       <a
-                        href={`https://wa.me/94${customer.phone.replace(/^0/, '').replace(/\s/g, '')}?text=${encodeURIComponent(
-                          `Hello ${customer.name}, thank you for supporting Lola Studio!`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-semibold text-xs transition-colors"
+                        href={`https://wa.me/94${customer.phone.replace(/^0/, '').replace(/\s/g, '')}?text=${encodeURIComponent(`Hello ${customer.name}, thank you for supporting Lola Studio!`)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-semibold text-xs transition-colors border border-emerald-100"
                       >
-                        <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>WhatsApp</span>
+                        <MessageCircle className="w-3.5 h-3.5 text-emerald-600" /> WhatsApp
                       </a>
                     </td>
                   </tr>

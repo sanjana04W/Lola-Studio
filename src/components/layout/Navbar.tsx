@@ -19,7 +19,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#FCFAF6]/95 backdrop-blur-md border-b border-[#E8E4DC] shadow-[0_2px_15px_-3px_rgba(45,30,23,0.04)] transition-all">
+    <header className="sticky top-0 z-40 w-full bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E8E4DC] shadow-[0_2px_15px_-3px_rgba(45,30,23,0.04)] transition-all">
       {/* Top Notification Announcement Bar */}
       <div className="bg-[#22201E] text-[#F7F4EE] text-[11px] py-2 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2">
         <Sparkles className="w-3.5 h-3.5 text-[#C5A059] animate-pulse" />

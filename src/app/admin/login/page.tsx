@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { Lock, Eye, EyeOff, AlertCircle, LogIn } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
-import { Shield, AlertCircle, ArrowLeft } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -13,6 +13,7 @@ export default function AdminLoginPage() {
 
   const [email, setEmail] = useState('dili.gamage11@gmail.com');
   const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -20,7 +21,6 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     const res = await login(email, password);
     if (res.success) {
       router.push('/admin');
@@ -36,133 +36,159 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#22201E] flex flex-col items-center justify-center p-4 sm:p-6 selection:bg-[#C5A059] selection:text-white relative overflow-hidden">
-      {/* Subtle organic background ambient accents matching website */}
-      <div className="absolute top-0 right-0 -mr-24 -mt-24 w-96 h-96 rounded-full bg-[#E7D8C3]/40 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 -ml-24 -mb-24 w-96 h-96 rounded-full bg-[#D6BFA0]/30 blur-3xl pointer-events-none" />
+    <div
+      className="min-h-screen flex items-center justify-center p-4 sm:p-6"
+      style={{ background: 'linear-gradient(135deg, #2C2A25 0%, #1A1814 50%, #2C2A25 100%)' }}
+    >
+      {/* Subtle pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: 'repeating-linear-gradient(45deg, #C5A059 0, #C5A059 1px, transparent 0, transparent 50%)',
+          backgroundSize: '20px 20px',
+        }}
+      />
 
-      {/* Top Breadcrumb: Return to Storefront */}
-      <div className="w-full max-w-md mb-4 flex justify-between items-center text-[11px] text-[#7F5940] uppercase tracking-[0.2em] relative z-10">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 hover:text-[#22201E] transition-colors font-semibold"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Return to Store</span>
-        </Link>
-        <span className="font-semibold text-[#A0826D]">Lola Studio Negombo</span>
-      </div>
+      <div className="relative w-full max-w-sm">
+        {/* Card */}
+        <div className="bg-white rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.45)] overflow-hidden">
+          {/* Top gold accent strip */}
+          <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #C5A059, #E8C87A, #C5A059)' }} />
 
-      {/* Main Admin Card - Warm Stone / Ivory Luxury Aesthetic */}
-      <div className="w-full max-w-md bg-white border border-[#E8E4DC] rounded-3xl p-8 sm:p-10 shadow-[0_15px_40px_-5px_rgba(45,30,23,0.08)] space-y-6 relative z-10">
-        {/* Brand Logo & Header Section */}
-        <div className="text-center space-y-3">
-          <div className="relative h-14 w-36 mx-auto transition-transform hover:scale-102">
-            <Image
-              src="/logo.png"
-              alt="Lola Studio"
-              fill
-              className="object-contain"
-              priority
-            />
+          <div className="px-8 pt-8 pb-9 space-y-6">
+            {/* Logo */}
+            <div className="flex justify-center">
+              <div className="relative h-14 w-36">
+                <Image
+                  src="/logo.png"
+                  alt="Lola Studio"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </div>
+
+            {/* Title block */}
+            <div className="text-center space-y-1">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Lock className="w-4 h-4 text-[#C5A059]" />
+                <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#C5A059]">
+                  Admin Panel
+                </span>
+              </div>
+              <h1 className="text-[26px] font-serif font-bold text-[#22201E] leading-tight">
+                Sign In
+              </h1>
+              <p className="text-sm text-[#8E8A80]">Authorised personnel only</p>
+            </div>
+
+            {/* Error alert */}
+            {error && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-semibold text-[#4A4640] uppercase tracking-wider">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="w-full px-4 py-3 rounded-xl border border-[#E8E4DC] bg-[#FDFCFB] text-[#22201E] text-sm placeholder-[#C4C0B8] focus:outline-none focus:ring-2 focus:ring-[#C5A059]/40 focus:border-[#C5A059] transition-all"
+                />
+              </div>
+
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-semibold text-[#4A4640] uppercase tracking-wider">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••"
+                    className="w-full px-4 py-3 pr-11 rounded-xl border border-[#E8E4DC] bg-[#FDFCFB] text-[#22201E] text-sm placeholder-[#C4C0B8] focus:outline-none focus:ring-2 focus:ring-[#C5A059]/40 focus:border-[#C5A059] transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A09890] hover:text-[#22201E] transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPass ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Sign In button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] disabled:opacity-70"
+                style={{
+                  background: loading
+                    ? '#B89040'
+                    : 'linear-gradient(135deg, #C8A252 0%, #D5B560 50%, #C8A252 100%)',
+                  color: '#14120E',
+                }}
+              >
+                <LogIn className="w-4 h-4" />
+                <span>{loading ? 'Signing in...' : 'Sign In'}</span>
+              </button>
+            </form>
+
+            {/* Quick demo access */}
+            <div className="pt-1 border-t border-[#F0EDE8]">
+              <p className="text-[10px] text-[#B0AC A4] text-center mb-2.5 uppercase tracking-wider text-[#ADA9A0]">
+                Quick Demo Access
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('owner')}
+                  className="py-2 rounded-xl border border-[#C5A059]/40 text-[#C5A059] text-xs font-semibold hover:bg-[#C5A059]/8 transition-colors"
+                >
+                  Owner Access
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('staff')}
+                  className="py-2 rounded-xl border border-[#E8E4DC] text-[#7A756B] text-xs font-semibold hover:bg-[#F5F2ED] transition-colors"
+                >
+                  Staff Access
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <h1 className="text-xl sm:text-2xl font-serif font-bold tracking-[0.3em] text-[#22201E] uppercase leading-tight">
-              L O L A &nbsp; S T U D I O
-            </h1>
-            <p className="text-[10px] sm:text-[11px] tracking-[0.28em] uppercase text-[#7F5940] font-semibold mt-1">
-              A D M I N I S T R A T I O N &nbsp; P O R T A L
+          {/* Footer */}
+          <div className="px-8 py-4 bg-[#FDFCFB] border-t border-[#F0EDE8] text-center">
+            <p className="text-[11px] text-[#B0AC A4] text-[#ADA9A0]">
+              © {new Date().getFullYear()} Lola Studio. All rights reserved.
             </p>
           </div>
         </div>
 
-        {/* Security Pill Banner: Authorized Access Only */}
-        <div className="border border-[#E8E4DC] bg-[#FAF7F2] py-2.5 px-4 text-center rounded-xl flex items-center justify-center gap-2">
-          <Shield className="w-3.5 h-3.5 text-[#B48A60]" />
-          <span className="text-[10px] tracking-[0.22em] font-bold uppercase text-[#674937]">
-            A U T H O R I Z E D &nbsp; A C C E S S &nbsp; O N L Y
-          </span>
-        </div>
-
-        {/* Error Alert */}
-        {error && (
-          <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-600" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* Login Form with Minimalist Underline Style */}
-        <form onSubmit={handleSubmit} className="space-y-6 pt-1">
-          {/* Admin Email */}
-          <div className="space-y-1.5">
-            <label className="block text-[#674937] text-[10px] tracking-[0.22em] font-bold uppercase font-sans">
-              ADMIN EMAIL
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@lolastudio.com"
-              className="w-full bg-transparent border-0 border-b border-[#D6BFA0] text-[#22201E] placeholder-[#B48A60]/50 focus:border-[#7F5940] focus:outline-none focus:ring-0 text-xs sm:text-sm py-2 px-0 transition-colors font-sans"
-            />
-          </div>
-
-          {/* Password */}
-          <div className="space-y-1.5">
-            <label className="block text-[#674937] text-[10px] tracking-[0.22em] font-bold uppercase font-sans">
-              PASSWORD
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full bg-transparent border-0 border-b border-[#D6BFA0] text-[#22201E] placeholder-[#B48A60]/50 focus:border-[#7F5940] focus:outline-none focus:ring-0 text-xs sm:text-sm py-2 px-0 transition-colors tracking-widest font-sans"
-            />
-          </div>
-
-          {/* Admin Sign In Button - Warm Gold & Dark Charcoal Luxury Styling */}
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 px-4 bg-[#C5A059] hover:bg-[#B38F46] active:scale-[0.99] text-[#22201E] font-bold text-xs uppercase tracking-[0.25em] transition-all rounded-xl shadow-soft hover:shadow-lifted font-sans"
-            >
-              {loading ? 'AUTHENTICATING...' : 'A D M I N &nbsp; S I G N &nbsp; I N'}
-            </button>
-          </div>
-        </form>
-
-        {/* Bottom Contact Administrator Notice */}
-        <div className="text-center pt-1">
-          <p className="text-[10px] tracking-[0.18em] uppercase text-[#8A857A] font-sans">
-            C O N T A C T &nbsp; Y O U R &nbsp; A D M I N I S T R A T O R &nbsp; F O R &nbsp; A C C E S S
-          </p>
-        </div>
-
-        {/* Reviewer Quick Access */}
-        <div className="pt-4 border-t border-[#E8E4DC] flex items-center justify-between text-[11px] text-[#674937]">
-          <span className="font-semibold uppercase tracking-wider text-[10px]">Instant Sign In:</span>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('owner')}
-              className="px-3 py-1 rounded-lg bg-[#FAF7F2] border border-[#D6BFA0] hover:bg-[#F4EDE1] text-[#674937] font-bold text-[10px] uppercase tracking-wider transition-colors"
-            >
-              Owner Access
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('staff')}
-              className="px-3 py-1 rounded-lg bg-[#FAF7F2] border border-[#E8E4DC] hover:bg-[#F4EDE1] text-[#8A857A] font-medium text-[10px] uppercase tracking-wider transition-colors"
-            >
-              Staff
-            </button>
-          </div>
+        {/* Back to store */}
+        <div className="mt-6 text-center">
+          <Link
+            href="/"
+            className="text-xs text-[#8E8A80] hover:text-[#C5A059] transition-colors inline-flex items-center gap-1.5"
+          >
+            ← Return to Storefront
+          </Link>
         </div>
       </div>
     </div>
