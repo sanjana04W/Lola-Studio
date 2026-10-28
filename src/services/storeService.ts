@@ -36,6 +36,13 @@ const SETTINGS_DOC_ID = 'store_config';
 
 // --- PRODUCTS ---
 export async function getProducts(onlyPublished = false): Promise<Product[]> {
+  // During SSR / static build or if window is undefined, quickly return initial catalogue
+  if (typeof window === 'undefined') {
+    return onlyPublished
+      ? INITIAL_PRODUCTS.filter((p) => p.isPublished)
+      : INITIAL_PRODUCTS;
+  }
+
   try {
     const colRef = collection(db, PRODUCTS_COLLECTION);
     const q = onlyPublished
@@ -44,9 +51,6 @@ export async function getProducts(onlyPublished = false): Promise<Product[]> {
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
-      // If Firestore is empty, seed automatically and return initial data
-      console.log('No products found in Firestore. Seeding initial catalog...');
-      await seedDatabase();
       return onlyPublished
         ? INITIAL_PRODUCTS.filter((p) => p.isPublished)
         : INITIAL_PRODUCTS;
@@ -58,7 +62,7 @@ export async function getProducts(onlyPublished = false): Promise<Product[]> {
     });
     return products;
   } catch (error) {
-    console.warn('Firestore fetch failed, falling back to local dataset:', error);
+    console.warn('Firestore fetch fallback to initial dataset:', error);
     return onlyPublished
       ? INITIAL_PRODUCTS.filter((p) => p.isPublished)
       : INITIAL_PRODUCTS;
@@ -66,13 +70,16 @@ export async function getProducts(onlyPublished = false): Promise<Product[]> {
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
+  if (typeof window === 'undefined') {
+    const found = INITIAL_PRODUCTS.find((p) => p.id === id);
+    return found || null;
+  }
   try {
     const docRef = doc(db, PRODUCTS_COLLECTION, id);
     const snapshot = await getDoc(docRef);
     if (snapshot.exists()) {
       return { id: snapshot.id, ...(snapshot.data() as Omit<Product, 'id'>) };
     }
-    // Fallback to initial products
     const found = INITIAL_PRODUCTS.find((p) => p.id === id);
     return found || null;
   } catch (error) {
@@ -98,6 +105,9 @@ export async function deleteProduct(id: string): Promise<void> {
 
 // --- CATEGORIES ---
 export async function getCategories(): Promise<Category[]> {
+  if (typeof window === 'undefined') {
+    return INITIAL_CATEGORIES;
+  }
   try {
     const colRef = collection(db, CATEGORIES_COLLECTION);
     const snapshot = await getDocs(colRef);
