@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { ShieldCheck, Lock, Mail, AlertCircle, ArrowRight, UserCheck } from 'lucide-react';
+import { Shield, AlertCircle, ArrowLeft } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function AdminLoginPage() {
     if (res.success) {
       router.push('/admin');
     } else {
-      setError(res.error || 'Authentication failed. Please verify credentials.');
+      setError(res.error || 'Invalid administrator credentials.');
       setLoading(false);
     }
   };
@@ -35,93 +36,131 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl border border-brand-200 p-8 shadow-lifted space-y-6">
-        {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <div className="relative w-16 h-16 mx-auto rounded-full overflow-hidden border-2 border-brand-200 shadow-sm">
-            <Image src="/logo.png" alt="Lola Studio Logo" fill className="object-cover" priority />
+    <div className="min-h-screen bg-[#FAF7F2] text-[#22201E] flex flex-col items-center justify-center p-4 sm:p-6 selection:bg-[#C5A059] selection:text-white relative overflow-hidden">
+      {/* Subtle organic background ambient accents matching website */}
+      <div className="absolute top-0 right-0 -mr-24 -mt-24 w-96 h-96 rounded-full bg-[#E7D8C3]/40 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -ml-24 -mb-24 w-96 h-96 rounded-full bg-[#D6BFA0]/30 blur-3xl pointer-events-none" />
+
+      {/* Top Breadcrumb: Return to Storefront */}
+      <div className="w-full max-w-md mb-4 flex justify-between items-center text-[11px] text-[#7F5940] uppercase tracking-[0.2em] relative z-10">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 hover:text-[#22201E] transition-colors font-semibold"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Return to Store</span>
+        </Link>
+        <span className="font-semibold text-[#A0826D]">Lola Studio Negombo</span>
+      </div>
+
+      {/* Main Admin Card - Warm Stone / Ivory Luxury Aesthetic */}
+      <div className="w-full max-w-md bg-white border border-[#E8E4DC] rounded-3xl p-8 sm:p-10 shadow-[0_15px_40px_-5px_rgba(45,30,23,0.08)] space-y-6 relative z-10">
+        {/* Brand Logo & Header Section */}
+        <div className="text-center space-y-3">
+          <div className="relative h-14 w-36 mx-auto transition-transform hover:scale-102">
+            <Image
+              src="/logo.png"
+              alt="Lola Studio"
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
-          <h1 className="font-serif text-2xl font-bold text-brand-950">
-            Lola Studio Admin Portal
-          </h1>
-          <p className="text-xs text-brand-600">
-            Secure back-end access for store management & fulfillment
-          </p>
+
+          <div>
+            <h1 className="text-xl sm:text-2xl font-serif font-bold tracking-[0.3em] text-[#22201E] uppercase leading-tight">
+              L O L A &nbsp; S T U D I O
+            </h1>
+            <p className="text-[10px] sm:text-[11px] tracking-[0.28em] uppercase text-[#7F5940] font-semibold mt-1">
+              A D M I N I S T R A T I O N &nbsp; P O R T A L
+            </p>
+          </div>
         </div>
 
+        {/* Security Pill Banner: Authorized Access Only */}
+        <div className="border border-[#E8E4DC] bg-[#FAF7F2] py-2.5 px-4 text-center rounded-xl flex items-center justify-center gap-2">
+          <Shield className="w-3.5 h-3.5 text-[#B48A60]" />
+          <span className="text-[10px] tracking-[0.22em] font-bold uppercase text-[#674937]">
+            A U T H O R I Z E D &nbsp; A C C E S S &nbsp; O N L Y
+          </span>
+        </div>
+
+        {/* Error Alert */}
         {error && (
-          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-600" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Email Password Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-brand-800 mb-1">
-              Admin Email Address
+        {/* Login Form with Minimalist Underline Style */}
+        <form onSubmit={handleSubmit} className="space-y-6 pt-1">
+          {/* Admin Email */}
+          <div className="space-y-1.5">
+            <label className="block text-[#674937] text-[10px] tracking-[0.22em] font-bold uppercase font-sans">
+              ADMIN EMAIL
             </label>
-            <div className="relative">
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="dili.gamage11@gmail.com"
-                className="w-full text-xs bg-brand-50/70 border border-brand-200 rounded-xl py-2.5 pl-9 pr-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white"
-              />
-              <Mail className="w-4 h-4 text-brand-400 absolute left-3 top-3 pointer-events-none" />
-            </div>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@lolastudio.com"
+              className="w-full bg-transparent border-0 border-b border-[#D6BFA0] text-[#22201E] placeholder-[#B48A60]/50 focus:border-[#7F5940] focus:outline-none focus:ring-0 text-xs sm:text-sm py-2 px-0 transition-colors font-sans"
+            />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-brand-800 mb-1">
-              Password
+          {/* Password */}
+          <div className="space-y-1.5">
+            <label className="block text-[#674937] text-[10px] tracking-[0.22em] font-bold uppercase font-sans">
+              PASSWORD
             </label>
-            <div className="relative">
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full text-xs bg-brand-50/70 border border-brand-200 rounded-xl py-2.5 pl-9 pr-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white"
-              />
-              <Lock className="w-4 h-4 text-brand-400 absolute left-3 top-3 pointer-events-none" />
-            </div>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-transparent border-0 border-b border-[#D6BFA0] text-[#22201E] placeholder-[#B48A60]/50 focus:border-[#7F5940] focus:outline-none focus:ring-0 text-xs sm:text-sm py-2 px-0 transition-colors tracking-widest font-sans"
+            />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-brand-900 hover:bg-brand-800 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-soft"
-          >
-            {loading ? 'Authenticating...' : 'Sign In with Firebase'}
-          </button>
+          {/* Admin Sign In Button - Warm Gold & Dark Charcoal Luxury Styling */}
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 px-4 bg-[#C5A059] hover:bg-[#B38F46] active:scale-[0.99] text-[#22201E] font-bold text-xs uppercase tracking-[0.25em] transition-all rounded-xl shadow-soft hover:shadow-lifted font-sans"
+            >
+              {loading ? 'AUTHENTICATING...' : 'A D M I N &nbsp; S I G N &nbsp; I N'}
+            </button>
+          </div>
         </form>
 
-        {/* One-Click Quick Access for Reviewers */}
-        <div className="pt-4 border-t border-brand-100 space-y-3">
-          <span className="text-[11px] font-semibold text-brand-500 uppercase tracking-wider block text-center">
-            One-Click Developer & Owner Bypass
-          </span>
+        {/* Bottom Contact Administrator Notice */}
+        <div className="text-center pt-1">
+          <p className="text-[10px] tracking-[0.18em] uppercase text-[#8A857A] font-sans">
+            C O N T A C T &nbsp; Y O U R &nbsp; A D M I N I S T R A T O R &nbsp; F O R &nbsp; A C C E S S
+          </p>
+        </div>
 
-          <div className="grid grid-cols-2 gap-2">
+        {/* Reviewer Quick Access */}
+        <div className="pt-4 border-t border-[#E8E4DC] flex items-center justify-between text-[11px] text-[#674937]">
+          <span className="font-semibold uppercase tracking-wider text-[10px]">Instant Sign In:</span>
+          <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => handleQuickDemo('owner')}
-              className="py-2.5 px-3 rounded-xl bg-brand-100 hover:bg-brand-200 text-brand-900 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+              className="px-3 py-1 rounded-lg bg-[#FAF7F2] border border-[#D6BFA0] hover:bg-[#F4EDE1] text-[#674937] font-bold text-[10px] uppercase tracking-wider transition-colors"
             >
-              <ShieldCheck className="w-4 h-4 text-brand-700" />
-              <span>Owner Access</span>
+              Owner Access
             </button>
             <button
+              type="button"
               onClick={() => handleQuickDemo('staff')}
-              className="py-2.5 px-3 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-brand-200"
+              className="px-3 py-1 rounded-lg bg-[#FAF7F2] border border-[#E8E4DC] hover:bg-[#F4EDE1] text-[#8A857A] font-medium text-[10px] uppercase tracking-wider transition-colors"
             >
-              <UserCheck className="w-4 h-4 text-brand-600" />
-              <span>Staff Access</span>
+              Staff
             </button>
           </div>
         </div>

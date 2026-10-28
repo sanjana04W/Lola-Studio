@@ -52,12 +52,9 @@ export default function Footer() {
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-full overflow-hidden border border-brand-700">
-                <Image src="/logo.png" alt="Lola Studio" fill className="object-cover" />
+              <div className="relative h-12 w-32">
+                <Image src="/logo.png" alt="Lola Studio" fill className="object-contain object-left" />
               </div>
-              <span className="font-serif text-2xl font-bold tracking-tight text-white">
-                LOLA STUDIO
-              </span>
             </div>
             <p className="text-xs text-brand-300 leading-relaxed max-w-sm">
               Handcrafted in Negombo, Sri Lanka. Lola Studio sculpts organic spiritual iconography, modern zen accents, and timeless home decor that brings serenity into your living sanctuary.
@@ -151,11 +148,6 @@ export default function Footer() {
               <li>
                 <Link href="/policies/privacy" className="hover:text-white transition-colors">
                   Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin/login" className="hover:text-white transition-colors text-brand-400">
-                  Owner / Staff Portal
                 </Link>
               </li>
             </ul>

@@ -35,26 +35,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { isAdmin, role, logout, loading } = useAuth();
   const [mobileSidebar, setMobileSidebar] = useState(false);
 
+  React.useEffect(() => {
+    if (!loading && !isAdmin && pathname !== '/admin/login') {
+      router.push('/admin/login');
+    }
+  }, [isAdmin, loading, pathname, router]);
+
   // If on login page, render children directly
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
 
+  // Prevent flash of admin layout for unauthenticated guests
+  if (loading || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center text-xs tracking-[0.2em] uppercase text-[#7F5940] font-sans">
+        Authenticating Secure Session...
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#F4EDE1]/50 flex">
+    <div className="min-h-screen bg-[#FAF7F2] flex">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col w-64 bg-brand-950 text-brand-100 border-r border-brand-900 flex-shrink-0">
         {/* Brand Header */}
         <div className="p-6 border-b border-brand-900 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden border border-brand-700">
-              <Image src="/logo.png" alt="Lola Studio" fill className="object-cover" />
+            <div className="relative h-10 w-24">
+              <Image src="/logo.png" alt="Lola Studio" fill className="object-contain object-left" priority />
             </div>
             <div>
-              <span className="font-serif text-lg font-bold text-white block leading-tight">
-                Lola Studio
-              </span>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-brand-400 block">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-[#C5A059] block">
                 Admin Panel
               </span>
             </div>

@@ -8,6 +8,7 @@ import CartDrawer from '@/components/layout/CartDrawer';
 import PixelScripts from '@/components/common/PixelScripts';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://lolastudio.lk'),
   title: 'Lola Studio | Handcrafted Zen & Artisanal Home Decor Sri Lanka',
   description:
     'Discover artisan-crafted Buddha statues, mineral stone incense burners, architectural wall art, and curated gift bundles. Handcrafted in Negombo, Sri Lanka with Islandwide Cash on Delivery (COD).',
