@@ -78,7 +78,7 @@ const FAQ_ITEMS = [
 
 export default function AboutPage() {
   return (
-    <div className="bg-[#FAF7F2] text-[#22201E]">
+    <div className="bg-[#F7F4EE] text-[#22201E]">
       {/* ── 1. Hero Section ── */}
       <section className="relative py-20 lg:py-28 bg-white border-b border-[#E8E4DC] overflow-hidden">
         {/* Soft atmospheric gradient blurs */}
@@ -86,7 +86,7 @@ export default function AboutPage() {
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-[#E8E4DC]/60 blur-3xl pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-5">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FAF7F2] border border-[#E8E4DC] shadow-sm text-[#7A756B] text-xs font-semibold tracking-wider uppercase">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F7F4EE] border border-[#E8E4DC] shadow-sm text-[#7A756B] text-xs font-semibold tracking-wider uppercase">
             <Sparkles className="w-3.5 h-3.5 text-[#C5A059]" />
             <span>Artisanal Heritage · Negombo, Sri Lanka</span>
           </div>
@@ -141,7 +141,7 @@ export default function AboutPage() {
 
             {/* Workshop Address Callout */}
             <div className="p-4 rounded-2xl bg-white border border-[#E8E4DC] shadow-sm flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#FAF7F2] border border-[#E8E4DC] flex items-center justify-center text-[#C5A059] flex-shrink-0 mt-0.5">
+              <div className="w-9 h-9 rounded-xl bg-[#F7F4EE] border border-[#E8E4DC] flex items-center justify-center text-[#C5A059] flex-shrink-0 mt-0.5">
                 <MapPin className="w-4 h-4" />
               </div>
               <div className="text-xs space-y-0.5">
@@ -157,7 +157,7 @@ export default function AboutPage() {
             <div className="space-y-4">
               <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-soft hover:shadow-lifted transition-all duration-300 border-2 border-white bg-[#F0EDE8]">
                 <Image
-                  src="FB_IMG_1793101721888.webp"
+                  src="/FB_IMG_1793101721888.webp"
                   alt="Lola Studio Handcrafted Aroma & Decor Set"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-500 ease-out"
@@ -176,7 +176,7 @@ export default function AboutPage() {
               </div>
               <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-soft hover:shadow-lifted transition-all duration-300 border-2 border-white bg-[#F0EDE8]">
                 <Image
-                  src="FB_IMG_1793106129719.webp"
+                  src="/FB_IMG_1793106129719.webp"
                   alt="Lola Studio Buddha & Ganesha Altar Set"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-500 ease-out"
@@ -208,7 +208,7 @@ export default function AboutPage() {
               return (
                 <div
                   key={item.step}
-                  className="p-6 rounded-3xl bg-[#FAF7F2] border border-[#E8E4DC] shadow-sm hover:shadow-soft transition-all space-y-3 relative group"
+                  className="p-6 rounded-3xl bg-[#F7F4EE] border border-[#E8E4DC] shadow-sm hover:shadow-soft transition-all space-y-3 relative group"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-bold text-[#C5A059] tracking-wider">
@@ -290,7 +290,7 @@ export default function AboutPage() {
             {FAQ_ITEMS.map((item, idx) => (
               <div
                 key={idx}
-                className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#E8E4DC] shadow-sm space-y-2"
+                className="p-6 rounded-2xl bg-[#F7F4EE] border border-[#E8E4DC] shadow-sm space-y-2"
               >
                 <h3 className="font-serif text-sm font-bold text-[#22201E]">{item.q}</h3>
                 <p className="text-xs text-[#7A756B] leading-relaxed">{item.a}</p>

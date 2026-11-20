@@ -167,58 +167,66 @@ export async function createOrder(order: Omit<Order, 'id' | 'orderNumber' | 'cre
   };
 
   try {
-    // 1. Save order to Firestore
-    const orderDocRef = doc(db, ORDERS_COLLECTION, orderId);
-    await setDoc(orderDocRef, newOrder);
+    const firestoreWrite = async () => {
+      // 1. Save order to Firestore
+      const orderDocRef = doc(db, ORDERS_COLLECTION, orderId);
+      await setDoc(orderDocRef, newOrder);
 
-    // 2. Decrement product stock in Firestore
-    for (const item of newOrder.items) {
-      try {
-        const prodRef = doc(db, PRODUCTS_COLLECTION, item.productId);
-        const prodSnap = await getDoc(prodRef);
-        if (prodSnap.exists()) {
-          const currentStock = prodSnap.data().stockQuantity ?? 10;
-          const newStock = Math.max(0, currentStock - item.quantity);
-          await updateDoc(prodRef, { stockQuantity: newStock });
+      // 2. Decrement product stock in Firestore
+      for (const item of newOrder.items) {
+        try {
+          const prodRef = doc(db, PRODUCTS_COLLECTION, item.productId);
+          const prodSnap = await getDoc(prodRef);
+          if (prodSnap.exists()) {
+            const currentStock = prodSnap.data().stockQuantity ?? 10;
+            const newStock = Math.max(0, currentStock - item.quantity);
+            await updateDoc(prodRef, { stockQuantity: newStock });
+          }
+        } catch (err) {
+          console.warn('Could not update stock for item', item.productId, err);
         }
-      } catch (err) {
-        console.warn('Could not update stock for item', item.productId, err);
       }
-    }
 
-    // 3. Upsert customer record
-    const customerPhone = newOrder.customer.phone.replace(/\s+/g, '');
-    const customerDocRef = doc(db, CUSTOMERS_COLLECTION, customerPhone);
-    const customerSnap = await getDoc(customerDocRef);
+      // 3. Upsert customer record
+      const customerPhone = newOrder.customer.phone.replace(/\s+/g, '');
+      const customerDocRef = doc(db, CUSTOMERS_COLLECTION, customerPhone);
+      const customerSnap = await getDoc(customerDocRef);
 
-    if (customerSnap.exists()) {
-      const existing = customerSnap.data() as Customer;
-      await updateDoc(customerDocRef, {
-        totalOrders: (existing.totalOrders || 1) + 1,
-        totalSpent: (existing.totalSpent || 0) + newOrder.total,
-        lastOrderDate: now,
-        isRepeatCustomer: true,
-        address: newOrder.customer.address,
-        district: newOrder.customer.district,
-      });
-    } else {
-      const newCustomer: Customer = {
-        id: customerPhone,
-        name: newOrder.customer.name,
-        phone: newOrder.customer.phone,
-        email: newOrder.customer.email,
-        address: newOrder.customer.address,
-        district: newOrder.customer.district,
-        totalOrders: 1,
-        totalSpent: newOrder.total,
-        lastOrderDate: now,
-        isRepeatCustomer: false,
-      };
-      await setDoc(customerDocRef, newCustomer);
-    }
+      if (customerSnap.exists()) {
+        const existing = customerSnap.data() as Customer;
+        await updateDoc(customerDocRef, {
+          totalOrders: (existing.totalOrders || 1) + 1,
+          totalSpent: (existing.totalSpent || 0) + newOrder.total,
+          lastOrderDate: now,
+          isRepeatCustomer: true,
+          address: newOrder.customer.address,
+          district: newOrder.customer.district,
+        });
+      } else {
+        const newCustomer: Customer = {
+          id: customerPhone,
+          name: newOrder.customer.name,
+          phone: newOrder.customer.phone,
+          email: newOrder.customer.email,
+          address: newOrder.customer.address,
+          district: newOrder.customer.district,
+          totalOrders: 1,
+          totalSpent: newOrder.total,
+          lastOrderDate: now,
+          isRepeatCustomer: false,
+        };
+        await setDoc(customerDocRef, newCustomer);
+      }
+    };
+
+    // Race firestore write against a 2-second timeout so checkout never freezes
+    await Promise.race([
+      firestoreWrite(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore write timeout')), 2000)),
+    ]);
   } catch (error) {
-    console.error('Error in createOrder Firestore write:', error);
-    // If offline or blocked, save locally in localStorage so checkout never crashes
+    console.error('Error or timeout in createOrder Firestore write:', error);
+    // If offline, timed out or blocked, save locally in localStorage so checkout never crashes
     if (typeof window !== 'undefined') {
       const existingOrders: Order[] = JSON.parse(localStorage.getItem('lola_local_orders') || '[]');
       existingOrders.unshift(newOrder);

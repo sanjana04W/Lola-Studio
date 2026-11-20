@@ -3,13 +3,34 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { ShoppingBag, Search, Menu, X, Phone, Sparkles, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+
+// Map each nav item to the pathname segment it "owns"
+const NAV_LINKS = [
+  { label: 'Home',           href: '/',                          match: 'home' },
+  { label: 'All Products',   href: '/shop',                      match: 'shop' },
+  { label: 'Spiritual & Zen',href: '/shop?category=spiritual-zen', match: 'spiritual-zen' },
+  { label: 'Home Decor',     href: '/shop?category=home-decor',  match: 'home-decor' },
+  { label: 'Gift Sets',      href: '/shop?category=gift-sets',   match: 'gift-sets' },
+  { label: 'About Us',       href: '/about',                     match: 'about' },
+  { label: 'Contact',        href: '/contact',                   match: 'contact' },
+];
 
 export default function Navbar() {
   const { totalItems, setIsCartOpen } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const pathname = usePathname();
+
+  // Determine which nav item is "active"
+  function isActive(href: string): boolean {
+    if (href === '/') return pathname === '/';
+    // Strip query string for pathname comparison
+    const hrefPath = href.split('?')[0];
+    return pathname.startsWith(hrefPath);
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +64,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Logo - Natural aspect ratio, uncropped and crystal clear */}
+          {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="block group">
               <div className="relative h-12 sm:h-14 w-28 sm:w-36 transition-transform duration-200 group-hover:scale-102">
@@ -59,53 +80,28 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Nav Links - Neatly arranged & spaced */}
-          <div className="hidden lg:flex items-center space-x-7 text-xs font-semibold uppercase tracking-wider text-brand-800">
-            <Link
-              href="/"
-              className="py-1 hover:text-brand-950 transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-700 hover:after:w-full after:transition-all"
-            >
-              Home
-            </Link>
-            <Link
-              href="/shop"
-              className="py-1 hover:text-brand-950 transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-700 hover:after:w-full after:transition-all"
-            >
-              All Products
-            </Link>
-            <Link
-              href="/shop?category=spiritual-zen"
-              className="py-1 hover:text-brand-950 transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-700 hover:after:w-full after:transition-all"
-            >
-              Spiritual & Zen
-            </Link>
-            <Link
-              href="/shop?category=home-decor"
-              className="py-1 hover:text-brand-950 transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-700 hover:after:w-full after:transition-all"
-            >
-              Home Decor
-            </Link>
-            <Link
-              href="/shop?category=gift-sets"
-              className="py-1 hover:text-brand-950 transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-700 hover:after:w-full after:transition-all"
-            >
-              Gift Sets
-            </Link>
-            <Link
-              href="/about"
-              className="py-1 hover:text-brand-950 transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-700 hover:after:w-full after:transition-all"
-            >
-              About Us
-            </Link>
-            <Link
-              href="/contact"
-              className="py-1 hover:text-brand-950 transition-colors relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-brand-700 hover:after:w-full after:transition-all"
-            >
-              Contact
-            </Link>
+          {/* Desktop Nav Links */}
+          <div className="hidden lg:flex items-center space-x-1 text-xs font-semibold uppercase tracking-wider text-brand-800">
+            {NAV_LINKS.map(({ label, href }) => {
+              const active = isActive(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={[
+                    'px-3 py-1.5 rounded-full transition-all duration-200',
+                    active
+                      ? 'bg-[#C5A059]/12 text-[#8B6914] ring-1 ring-[#C5A059]/30'
+                      : 'hover:text-brand-950 hover:bg-[#C5A059]/8',
+                  ].join(' ')}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </div>
 
-          {/* Right Action Controls: Search + Cart (Admin removed per client instructions) */}
+          {/* Right Action Controls: Search + Cart */}
           <div className="flex items-center space-x-3.5">
             {/* Search Input Box */}
             <form onSubmit={handleSearch} className="hidden md:flex relative items-center">
@@ -151,56 +147,25 @@ export default function Navbar() {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-brand-100 py-4 space-y-2 bg-white/98 rounded-b-2xl animate-fadeIn">
-            <Link
-              href="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-brand-900 hover:bg-brand-50 rounded-lg"
-            >
-              Home
-            </Link>
-            <Link
-              href="/shop"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-brand-900 hover:bg-brand-50 rounded-lg"
-            >
-              All Products
-            </Link>
-            <Link
-              href="/shop?category=spiritual-zen"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-brand-900 hover:bg-brand-50 rounded-lg"
-            >
-              Spiritual & Zen
-            </Link>
-            <Link
-              href="/shop?category=home-decor"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-brand-900 hover:bg-brand-50 rounded-lg"
-            >
-              Home Decor
-            </Link>
-            <Link
-              href="/shop?category=gift-sets"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-brand-900 hover:bg-brand-50 rounded-lg"
-            >
-              Gift Sets
-            </Link>
-            <Link
-              href="/about"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-brand-900 hover:bg-brand-50 rounded-lg"
-            >
-              About Us
-            </Link>
-            <Link
-              href="/contact"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-brand-900 hover:bg-brand-50 rounded-lg"
-            >
-              Contact
-            </Link>
+          <div className="lg:hidden border-t border-brand-100 py-4 space-y-1 bg-white/98 rounded-b-2xl animate-fadeIn">
+            {NAV_LINKS.map(({ label, href }) => {
+              const active = isActive(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={[
+                    'flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-all',
+                    active
+                      ? 'bg-[#C5A059]/12 text-[#8B6914] ring-1 ring-[#C5A059]/30'
+                      : 'text-brand-900 hover:bg-brand-50',
+                  ].join(' ')}
+                >
+                  {label}
+                </Link>
+              );
+            })}
             <div className="pt-2 border-t border-brand-100 px-3 text-xs text-brand-600 flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-brand-500" />
               <span>Negombo, Sri Lanka • Cash on Delivery</span>
