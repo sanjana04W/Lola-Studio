@@ -34,38 +34,47 @@ const CUSTOMERS_COLLECTION = 'customers';
 const SETTINGS_COLLECTION = 'settings';
 const SETTINGS_DOC_ID = 'store_config';
 
+// Helper to race promise against a fast timeout (e.g. 1.2s)
+function withTimeout<T>(promise: Promise<T>, ms = 1200, fallbackVal: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallbackVal), ms)),
+  ]);
+}
+
 // --- PRODUCTS ---
 export async function getProducts(onlyPublished = false): Promise<Product[]> {
-  // During SSR / static build or if window is undefined, quickly return initial catalogue
+  const fallback = onlyPublished
+    ? INITIAL_PRODUCTS.filter((p) => p.isPublished)
+    : INITIAL_PRODUCTS;
+
+  // During SSR or static build, instantly return local catalogue
   if (typeof window === 'undefined') {
-    return onlyPublished
-      ? INITIAL_PRODUCTS.filter((p) => p.isPublished)
-      : INITIAL_PRODUCTS;
+    return fallback;
   }
 
   try {
-    const colRef = collection(db, PRODUCTS_COLLECTION);
-    const q = onlyPublished
-      ? query(colRef, where('isPublished', '==', true))
-      : colRef;
-    const snapshot = await getDocs(q);
+    const fetchFirestore = async (): Promise<Product[]> => {
+      const colRef = collection(db, PRODUCTS_COLLECTION);
+      const q = onlyPublished
+        ? query(colRef, where('isPublished', '==', true))
+        : colRef;
+      const snapshot = await getDocs(q);
 
-    if (snapshot.empty) {
-      return onlyPublished
-        ? INITIAL_PRODUCTS.filter((p) => p.isPublished)
-        : INITIAL_PRODUCTS;
-    }
+      if (snapshot.empty) return fallback;
 
-    const products: Product[] = [];
-    snapshot.forEach((doc) => {
-      products.push({ id: doc.id, ...(doc.data() as Omit<Product, 'id'>) });
-    });
-    return products;
+      const products: Product[] = [];
+      snapshot.forEach((doc) => {
+        products.push({ id: doc.id, ...(doc.data() as Omit<Product, 'id'>) });
+      });
+      return products;
+    };
+
+    // Return within 1.2 seconds max, otherwise instantly serve the pre-loaded initial catalogue
+    return await withTimeout(fetchFirestore(), 1200, fallback);
   } catch (error) {
     console.warn('Firestore fetch fallback to initial dataset:', error);
-    return onlyPublished
-      ? INITIAL_PRODUCTS.filter((p) => p.isPublished)
-      : INITIAL_PRODUCTS;
+    return fallback;
   }
 }
 
@@ -109,16 +118,17 @@ export async function getCategories(): Promise<Category[]> {
     return INITIAL_CATEGORIES;
   }
   try {
-    const colRef = collection(db, CATEGORIES_COLLECTION);
-    const snapshot = await getDocs(colRef);
-    if (snapshot.empty) {
-      return INITIAL_CATEGORIES;
-    }
-    const categories: Category[] = [];
-    snapshot.forEach((doc) => {
-      categories.push({ id: doc.id, ...(doc.data() as Omit<Category, 'id'>) });
-    });
-    return categories;
+    const fetchFirestore = async (): Promise<Category[]> => {
+      const colRef = collection(db, CATEGORIES_COLLECTION);
+      const snapshot = await getDocs(colRef);
+      if (snapshot.empty) return INITIAL_CATEGORIES;
+      const categories: Category[] = [];
+      snapshot.forEach((doc) => {
+        categories.push({ id: doc.id, ...(doc.data() as Omit<Category, 'id'>) });
+      });
+      return categories;
+    };
+    return await withTimeout(fetchFirestore(), 1200, INITIAL_CATEGORIES);
   } catch (error) {
     console.warn('Categories fallback:', error);
     return INITIAL_CATEGORIES;

@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Product, Category } from '@/types';
 import { getProducts, getCategories } from '@/services/storeService';
+import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from '@/lib/initialData';
 import ProductCard from '@/components/product/ProductCard';
 import { Search, Filter, SlidersHorizontal, Sparkles, Check } from 'lucide-react';
 
@@ -12,9 +13,9 @@ function ShopContent() {
   const initialCategory = searchParams.get('category') || 'all';
   const initialSearch = searchParams.get('search') || '';
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
+  const [loading, setLoading] = useState(false);
 
   // Filters
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
@@ -25,11 +26,9 @@ function ShopContent() {
 
   useEffect(() => {
     async function loadData() {
-      setLoading(true);
       const [prods, cats] = await Promise.all([getProducts(true), getCategories()]);
       setProducts(prods);
       setCategories(cats);
-      setLoading(false);
     }
     loadData();
   }, []);
@@ -254,8 +253,8 @@ function ShopContent() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {sortedProducts.map((prod) => (
-            <ProductCard key={prod.id} product={prod} />
+          {sortedProducts.map((prod, index) => (
+            <ProductCard key={prod.id} product={prod} priority={index < 4} />
           ))}
         </div>
       )}

@@ -69,7 +69,7 @@ export default function HeroBanner() {
               {/* Main Primary Image */}
               <div className="relative aspect-[3/4] w-full rounded-3xl overflow-hidden shadow-floating border-4 border-white bg-brand-100">
                 <Image
-                  src="/FB_IMG_1793104373311.jpg"
+                  src="/FB_IMG_1793104373311.webp"
                   alt="Lola Studio Buddha Statue"
                   fill
                   className="object-cover"
@@ -80,7 +80,7 @@ export default function HeroBanner() {
               {/* Overlapping Secondary Card */}
               <div className="absolute -bottom-6 -left-6 w-44 sm:w-52 aspect-square rounded-2xl overflow-hidden shadow-floating border-4 border-white hidden sm:block bg-brand-100">
                 <Image
-                  src="/FB_IMG_1793104253266.jpg"
+                  src="/FB_IMG_1793104253266.webp"
                   alt="Lola Studio Incense Burner"
                   fill
                   className="object-cover"

@@ -39,7 +39,7 @@ const SOCIAL_POSTS = [
     views: '45.2K views',
     likes: '3.8K',
     title: 'Unmolding our Samadhi Buddha statue ✨ Studio ASMR',
-    image: '/FB_IMG_1793104373311.jpg',
+    image: '/FB_IMG_1793104373311.webp',
     url: 'https://www.tiktok.com/@lolastudio21?_r=1&_t=ZS-9AuDDaKFHC0',
   },
   {
@@ -48,7 +48,7 @@ const SOCIAL_POSTS = [
     views: 'Reel',
     likes: '1.4K',
     title: 'Lotus incense burner waterfall effect 🕯️ Mindful evenings',
-    image: '/FB_IMG_1793104253266.jpg',
+    image: '/FB_IMG_1793104253266.webp',
     url: 'https://www.instagram.com/lola_studio_21?mdxt=MWozank0YWp1NDgzZg==',
   },
   {
@@ -57,7 +57,7 @@ const SOCIAL_POSTS = [
     views: 'Community',
     likes: '890',
     title: 'New gift bundles packed for dispatch islandwide 📦',
-    image: '/FB_IMG_1793104474800.jpg',
+    image: '/FB_IMG_1793104474800.webp',
     url: 'https://www.facebook.com/share/1BHPwwgVWa/',
   },
 ];

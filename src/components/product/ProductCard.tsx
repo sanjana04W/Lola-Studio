@@ -10,9 +10,10 @@ import ProductModal from './ProductModal';
 
 interface ProductCardProps {
   product: Product;
+  priority?: boolean;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, priority = false }: ProductCardProps) {
   const { addToCart } = useCart();
   const [modalOpen, setModalOpen] = useState(false);
   const [addedAnimation, setAddedAnimation] = useState(false);
@@ -41,6 +42,8 @@ export default function ProductCard({ product }: ProductCardProps) {
               alt={product.name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              priority={priority}
+              loading={priority ? undefined : 'lazy'}
               className="object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
             />
           </Link>

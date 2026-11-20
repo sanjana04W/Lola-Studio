@@ -13,7 +13,7 @@ export default function BrandStory() {
             <div className="space-y-4">
               <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-soft bg-brand-100">
                 <Image
-                  src="/FB_IMG_1793104384214.jpg"
+                  src="/FB_IMG_1793104373311.webp"
                   alt="Lola Studio Craftsmanship"
                   fill
                   className="object-cover"
@@ -21,7 +21,7 @@ export default function BrandStory() {
               </div>
               <div className="relative aspect-square rounded-2xl overflow-hidden shadow-soft bg-brand-100">
                 <Image
-                  src="/FB_IMG_1793104474800.jpg"
+                  src="/FB_IMG_1793104474800.webp"
                   alt="Lola Studio Gift Bundles"
                   fill
                   className="object-cover"
@@ -31,7 +31,7 @@ export default function BrandStory() {
             <div className="space-y-4 pt-8">
               <div className="relative aspect-square rounded-2xl overflow-hidden shadow-soft bg-brand-100">
                 <Image
-                  src="/FB_IMG_1793104375462.jpg"
+                  src="/FB_IMG_1793104375462.webp"
                   alt="Buddha Detail Carving"
                   fill
                   className="object-cover"
@@ -39,7 +39,7 @@ export default function BrandStory() {
               </div>
               <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-soft bg-brand-100">
                 <Image
-                  src="/FB_IMG_1793104301992.jpg"
+                  src="/FB_IMG_1793104301992.webp"
                   alt="Handcrafted Stone Incense Holder"
                   fill
                   className="object-cover"

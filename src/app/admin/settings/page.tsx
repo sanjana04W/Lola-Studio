@@ -88,7 +88,10 @@ export default function AdminSettingsPage() {
   };
 
   const set = (key: keyof StoreSettings) => (val: string) =>
-    setSettings((prev) => ({ ...prev, [key]: key.startsWith('cod') || key === 'freeDelivery' ? Number(val) : val }));
+    setSettings((prev) => ({
+      ...prev,
+      [key]: key.startsWith('cod') || key === 'freeDeliveryThreshold' ? Number(val) : val,
+    }));
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">

@@ -82,8 +82,8 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filtered.slice(0, 8).map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {filtered.slice(0, 8).map((product, index) => (
+            <ProductCard key={product.id} product={product} priority={index < 4} />
           ))}
         </div>
 
