@@ -157,7 +157,7 @@ export default function AboutPage() {
             <div className="space-y-4">
               <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-soft hover:shadow-lifted transition-all duration-300 border-2 border-white bg-[#F0EDE8]">
                 <Image
-                  src="/about-artisan-workshop.webp"
+                  src="FB_IMG_1793101721888.webp"
                   alt="Lola Studio Handcrafted Aroma & Decor Set"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-500 ease-out"
@@ -176,7 +176,7 @@ export default function AboutPage() {
               </div>
               <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-soft hover:shadow-lifted transition-all duration-300 border-2 border-white bg-[#F0EDE8]">
                 <Image
-                  src="/about-spiritual-sanctuary.webp"
+                  src="FB_IMG_1793106129719.webp"
                   alt="Lola Studio Buddha & Ganesha Altar Set"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-500 ease-out"
