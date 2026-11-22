@@ -1,36 +1,121 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { ShoppingBag, Search, Menu, X, Phone, Sparkles, MapPin } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
-// Map each nav item to the pathname segment it "owns"
+// Navigation links config
 const NAV_LINKS = [
-  { label: 'Home',           href: '/',                          match: 'home' },
-  { label: 'All Products',   href: '/shop',                      match: 'shop' },
-  { label: 'Spiritual & Zen',href: '/shop?category=spiritual-zen', match: 'spiritual-zen' },
-  { label: 'Home Decor',     href: '/shop?category=home-decor',  match: 'home-decor' },
-  { label: 'Gift Sets',      href: '/shop?category=gift-sets',   match: 'gift-sets' },
-  { label: 'About Us',       href: '/about',                     match: 'about' },
-  { label: 'Contact',        href: '/contact',                   match: 'contact' },
+  { label: 'Home',            href: '/' },
+  { label: 'All Products',    href: '/shop' },
+  { label: 'Spiritual & Zen', href: '/shop?category=spiritual-zen' },
+  { label: 'Home Decor',      href: '/shop?category=home-decor' },
+  { label: 'Gift Sets',       href: '/shop?category=gift-sets' },
+  { label: 'About Us',        href: '/about' },
+  { label: 'Contact',         href: '/contact' },
 ];
+
+/**
+ * Checks if a specific nav link is active based on pathname AND query params
+ */
+function isLinkActive(href: string, pathname: string, currentCategory: string | null): boolean {
+  // 1. Home page
+  if (href === '/') {
+    return pathname === '/';
+  }
+
+  // 2. Non-shop pages (/about, /contact, etc.)
+  if (!href.startsWith('/shop')) {
+    return pathname.startsWith(href);
+  }
+
+  // 3. Shop routes
+  if (!pathname.startsWith('/shop')) {
+    return false;
+  }
+
+  const queryIndex = href.indexOf('?');
+  const linkCategory =
+    queryIndex !== -1 ? new URLSearchParams(href.slice(queryIndex)).get('category') : null;
+
+  if (linkCategory) {
+    // Specific category link is active ONLY when that exact category is selected in the URL
+    return currentCategory === linkCategory;
+  }
+
+  // 'All Products' link (/shop with no category):
+  // Active ONLY when on /shop AND no category or 'all' is active
+  return !currentCategory || currentCategory === 'all';
+}
+
+function DesktopNavLinks() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentCategory = searchParams ? searchParams.get('category') : null;
+
+  return (
+    <div className="hidden lg:flex items-center space-x-1 text-xs font-semibold uppercase tracking-wider text-brand-800">
+      {NAV_LINKS.map(({ label, href }) => {
+        const active = isLinkActive(href, pathname, currentCategory);
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={[
+              'px-3.5 py-1.5 rounded-full transition-all duration-200',
+              active
+                ? 'bg-[#C5A059]/15 text-[#8B6914] ring-1 ring-[#C5A059]/40 shadow-xs'
+                : 'hover:text-brand-950 hover:bg-[#C5A059]/8',
+            ].join(' ')}
+          >
+            {label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function MobileNavLinks({ onClose }: { onClose: () => void }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentCategory = searchParams ? searchParams.get('category') : null;
+
+  return (
+    <div className="lg:hidden border-t border-brand-100 py-4 space-y-1 bg-white/98 rounded-b-2xl animate-fadeIn">
+      {NAV_LINKS.map(({ label, href }) => {
+        const active = isLinkActive(href, pathname, currentCategory);
+        return (
+          <Link
+            key={href}
+            href={href}
+            onClick={onClose}
+            className={[
+              'flex items-center px-3.5 py-2 text-xs font-semibold uppercase tracking-wider rounded-full transition-all',
+              active
+                ? 'bg-[#C5A059]/15 text-[#8B6914] ring-1 ring-[#C5A059]/40'
+                : 'text-brand-900 hover:bg-brand-50',
+            ].join(' ')}
+          >
+            {label}
+          </Link>
+        );
+      })}
+      <div className="pt-2 border-t border-brand-100 px-3 text-xs text-brand-600 flex items-center gap-1.5">
+        <MapPin className="w-3.5 h-3.5 text-brand-500" />
+        <span>Negombo, Sri Lanka • Cash on Delivery</span>
+      </div>
+    </div>
+  );
+}
 
 export default function Navbar() {
   const { totalItems, setIsCartOpen } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const pathname = usePathname();
-
-  // Determine which nav item is "active"
-  function isActive(href: string): boolean {
-    if (href === '/') return pathname === '/';
-    // Strip query string for pathname comparison
-    const hrefPath = href.split('?')[0];
-    return pathname.startsWith(hrefPath);
-  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,26 +165,20 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden lg:flex items-center space-x-1 text-xs font-semibold uppercase tracking-wider text-brand-800">
-            {NAV_LINKS.map(({ label, href }) => {
-              const active = isActive(href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={[
-                    'px-3 py-1.5 rounded-full transition-all duration-200',
-                    active
-                      ? 'bg-[#C5A059]/12 text-[#8B6914] ring-1 ring-[#C5A059]/30'
-                      : 'hover:text-brand-950 hover:bg-[#C5A059]/8',
-                  ].join(' ')}
-                >
-                  {label}
-                </Link>
-              );
-            })}
-          </div>
+          {/* Desktop Nav Links (wrapped in Suspense for useSearchParams) */}
+          <Suspense
+            fallback={
+              <div className="hidden lg:flex items-center space-x-1 text-xs font-semibold uppercase tracking-wider text-brand-800">
+                {NAV_LINKS.map(({ label, href }) => (
+                  <Link key={href} href={href} className="px-3.5 py-1.5 rounded-full hover:bg-[#C5A059]/8">
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            }
+          >
+            <DesktopNavLinks />
+          </Suspense>
 
           {/* Right Action Controls: Search + Cart */}
           <div className="flex items-center space-x-3.5">
@@ -147,30 +226,9 @@ export default function Navbar() {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-brand-100 py-4 space-y-1 bg-white/98 rounded-b-2xl animate-fadeIn">
-            {NAV_LINKS.map(({ label, href }) => {
-              const active = isActive(href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={[
-                    'flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-all',
-                    active
-                      ? 'bg-[#C5A059]/12 text-[#8B6914] ring-1 ring-[#C5A059]/30'
-                      : 'text-brand-900 hover:bg-brand-50',
-                  ].join(' ')}
-                >
-                  {label}
-                </Link>
-              );
-            })}
-            <div className="pt-2 border-t border-brand-100 px-3 text-xs text-brand-600 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-brand-500" />
-              <span>Negombo, Sri Lanka • Cash on Delivery</span>
-            </div>
-          </div>
+          <Suspense fallback={null}>
+            <MobileNavLinks onClose={() => setMobileMenuOpen(false)} />
+          </Suspense>
         )}
       </nav>
     </header>

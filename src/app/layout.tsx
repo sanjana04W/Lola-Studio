@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/layout/CartDrawer';
 import PixelScripts from '@/components/common/PixelScripts';
+import ZenBackgroundAnimation from '@/components/layout/ZenBackgroundAnimation';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://lolastudio.lk'),
@@ -52,7 +53,8 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/logo.png" />
       </head>
-      <body className="min-h-screen flex flex-col bg-[#FAF7F2] text-[#22201E]">
+      <body className="min-h-screen flex flex-col bg-[#FAF7F2] text-[#22201E] relative">
+        <ZenBackgroundAnimation />
         <AuthProvider>
           <CartProvider>
             <PixelScripts />

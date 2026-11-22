@@ -81,9 +81,9 @@ export default function AboutPage() {
     <div className="bg-[#F7F4EE] text-[#22201E]">
       {/* ── 1. Hero Section ── */}
       <section className="relative py-20 lg:py-28 bg-white border-b border-[#E8E4DC] overflow-hidden">
-        {/* Soft atmospheric gradient blurs */}
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-[#C5A059]/10 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-[#E8E4DC]/60 blur-3xl pointer-events-none" />
+        {/* Soft atmospheric gradient blurs (Animated Zen Drift) */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-[#C5A059]/20 blur-3xl pointer-events-none animate-zen-drift-slow" />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-[#C5A059]/15 blur-3xl pointer-events-none animate-zen-drift-reverse" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-5">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F7F4EE] border border-[#E8E4DC] shadow-sm text-[#7A756B] text-xs font-semibold tracking-wider uppercase">

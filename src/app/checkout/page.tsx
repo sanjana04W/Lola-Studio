@@ -14,7 +14,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
-  Mail,
+  Smartphone,
   RefreshCw,
   Lock,
 } from 'lucide-react';
@@ -87,7 +87,7 @@ export default function CheckoutPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // ── Step 1: Validate form → send OTP ─────────────────────────────────────
+  // ── Step 1: Validate form → send Phone SMS OTP ─────────────────────────────
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
@@ -96,13 +96,9 @@ export default function CheckoutPage() {
       setErrorMessage('Please fill in all mandatory fields (Name, Phone, Address, City).');
       return;
     }
-    const cleanPhone = formData.phone.replace(/[\s-]/g, '');
+    const cleanPhone = formData.phone.replace(/[\s\-()]/g, '');
     if (cleanPhone.length < 9) {
-      setErrorMessage('Please enter a valid phone number so our courier can contact you upon arrival.');
-      return;
-    }
-    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setErrorMessage('Please enter a valid email address — we will send your verification code there.');
+      setErrorMessage('Please enter a valid phone number (at least 9 digits) to receive your verification code.');
       return;
     }
 
@@ -120,21 +116,24 @@ export default function CheckoutPage() {
       const res = await fetch('/api/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({ phone: formData.phone.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send code.');
+      if (!res.ok) throw new Error(data.error || 'Failed to send verification code.');
 
       setStage('otp');
-      // devCode is returned when Gmail isn't configured yet (dev/testing mode)
+
       if (data.devCode) {
         setDevCode(data.devCode);
-        // Store in sessionStorage so it survives dev server restarts
-        sessionStorage.setItem('lola_dev_otp', JSON.stringify({ email: formData.email, code: data.devCode }));
-        setOtpSuccess('Email not configured — your code is shown below for testing.');
+        sessionStorage.setItem(
+          'lola_dev_otp',
+          JSON.stringify({ phone: formData.phone.trim(), code: data.devCode })
+        );
+        setOtpSuccess(`Verification code generated for ${formData.phone.trim()}`);
       } else {
-        setOtpSuccess(`A 6-digit code was sent to ${formData.email}`);
+        setOtpSuccess(`A 6-digit SMS verification code was sent to ${formData.phone.trim()}`);
       }
+
       setResendCooldown(60);
       setTimeout(() => otpRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
     } catch (err: any) {
@@ -144,7 +143,7 @@ export default function CheckoutPage() {
     }
   };
 
-  // ── Step 2: Verify OTP → place order ─────────────────────────────────────
+  // ── Step 2: Verify Phone OTP → place order ─────────────────────────────────
   const handleVerifyAndPlace = async () => {
     setOtpError('');
     if (otpCode.trim().length !== 6) {
@@ -156,7 +155,6 @@ export default function CheckoutPage() {
 
     try {
       // 1. Verify code
-      // Fast path: if devCode is present in client state or sessionStorage and matches
       const savedDev = typeof window !== 'undefined' ? sessionStorage.getItem('lola_dev_otp') : null;
       const parsedDev = savedDev ? JSON.parse(savedDev) : null;
       const isClientMatch =
@@ -164,26 +162,24 @@ export default function CheckoutPage() {
         (parsedDev && parsedDev.code === otpCode.trim());
 
       if (!isClientMatch) {
-        // Verify via API route
         try {
           const controller = new AbortController();
           const tid = setTimeout(() => controller.abort(), 6000);
           const vRes = await fetch('/api/verify-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: formData.email, code: otpCode.trim() }),
+            body: JSON.stringify({ phone: formData.phone.trim(), code: otpCode.trim() }),
             signal: controller.signal,
           });
           clearTimeout(tid);
 
           const vData = await vRes.json();
           if (!vRes.ok) {
-            setOtpError(vData.error || 'Incorrect verification code. Please check and try again.');
+            setOtpError(vData.error || 'Incorrect verification code. Please check your SMS and try again.');
             setStage('otp');
             return;
           }
         } catch (fetchErr: any) {
-          // If server call fails but code is 6 digits, allow fallback if matching or report error
           console.warn('verify-otp network error:', fetchErr);
           setOtpError('Could not verify code. Please check your connection or retry.');
           setStage('otp');
@@ -206,7 +202,7 @@ export default function CheckoutPage() {
         customer: {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
-          email: formData.email.trim(),
+          email: formData.email.trim() || 'not-provided@customer.lk',
           address: formData.address.trim(),
           city: formData.city.trim(),
           district: formData.district,
@@ -284,21 +280,30 @@ export default function CheckoutPage() {
               <div>
                 <label className="block text-xs font-semibold text-brand-800 mb-1">Full Name *</label>
                 <input
-                  type="text" name="name" required
+                  type="text"
+                  name="name"
+                  required
                   placeholder="e.g. Dilini Gamage"
-                  value={formData.name} onChange={handleChange}
+                  value={formData.name}
+                  onChange={handleChange}
                   disabled={stage !== 'form'}
                   className="w-full text-xs bg-brand-50/60 border border-brand-200 rounded-xl py-2.5 px-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white disabled:opacity-60"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-brand-800 mb-1">Contact Phone Number (For Courier) *</label>
+                <label className="block text-xs font-semibold text-brand-800 mb-1">
+                  Contact Phone Number *{' '}
+                  <span className="text-[#C5A059] font-normal">(OTP sent via SMS)</span>
+                </label>
                 <input
-                  type="tel" name="phone" required
+                  type="tel"
+                  name="phone"
+                  required
                   placeholder="e.g. 077 123 4567"
-                  value={formData.phone} onChange={handleChange}
+                  value={formData.phone}
+                  onChange={handleChange}
                   disabled={stage !== 'form'}
-                  className="w-full text-xs bg-brand-50/60 border border-brand-200 rounded-xl py-2.5 px-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white disabled:opacity-60"
+                  className="w-full text-xs bg-brand-50/60 border border-brand-200 rounded-xl py-2.5 px-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white disabled:opacity-60 font-medium"
                 />
               </div>
             </div>
@@ -306,12 +311,14 @@ export default function CheckoutPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-brand-800 mb-1">
-                  Email Address * <span className="text-[#C5A059] font-normal">(Verification code sent here)</span>
+                  Email Address <span className="text-brand-400 font-normal">(Optional - For Receipt)</span>
                 </label>
                 <input
-                  type="email" name="email" required
+                  type="email"
+                  name="email"
                   placeholder="e.g. dilini@gmail.com"
-                  value={formData.email} onChange={handleChange}
+                  value={formData.email}
+                  onChange={handleChange}
                   disabled={stage !== 'form'}
                   className="w-full text-xs bg-brand-50/60 border border-brand-200 rounded-xl py-2.5 px-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white disabled:opacity-60"
                 />
@@ -320,7 +327,8 @@ export default function CheckoutPage() {
                 <label className="block text-xs font-semibold text-brand-800 mb-1">District *</label>
                 <select
                   name="district"
-                  value={formData.district} onChange={handleChange}
+                  value={formData.district}
+                  onChange={handleChange}
                   disabled={stage !== 'form'}
                   className="w-full text-xs bg-brand-50/60 border border-brand-200 rounded-xl py-2.5 px-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white disabled:opacity-60"
                 >
@@ -336,9 +344,12 @@ export default function CheckoutPage() {
             <div>
               <label className="block text-xs font-semibold text-brand-800 mb-1">Street Address *</label>
               <input
-                type="text" name="address" required
+                type="text"
+                name="address"
+                required
                 placeholder="House No, Street Name, Apartment / Landmark"
-                value={formData.address} onChange={handleChange}
+                value={formData.address}
+                onChange={handleChange}
                 disabled={stage !== 'form'}
                 className="w-full text-xs bg-brand-50/60 border border-brand-200 rounded-xl py-2.5 px-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white disabled:opacity-60"
               />
@@ -348,9 +359,12 @@ export default function CheckoutPage() {
               <div>
                 <label className="block text-xs font-semibold text-brand-800 mb-1">City / Town *</label>
                 <input
-                  type="text" name="city" required
+                  type="text"
+                  name="city"
+                  required
                   placeholder="e.g. Negombo, Dehiwala, Kandy"
-                  value={formData.city} onChange={handleChange}
+                  value={formData.city}
+                  onChange={handleChange}
                   disabled={stage !== 'form'}
                   className="w-full text-xs bg-brand-50/60 border border-brand-200 rounded-xl py-2.5 px-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white disabled:opacity-60"
                 />
@@ -358,9 +372,11 @@ export default function CheckoutPage() {
               <div>
                 <label className="block text-xs font-semibold text-brand-800 mb-1">Postal Code (Optional)</label>
                 <input
-                  type="text" name="postalCode"
+                  type="text"
+                  name="postalCode"
                   placeholder="e.g. 11500"
-                  value={formData.postalCode} onChange={handleChange}
+                  value={formData.postalCode}
+                  onChange={handleChange}
                   disabled={stage !== 'form'}
                   className="w-full text-xs bg-brand-50/60 border border-brand-200 rounded-xl py-2.5 px-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white disabled:opacity-60"
                 />
@@ -370,9 +386,11 @@ export default function CheckoutPage() {
             <div>
               <label className="block text-xs font-semibold text-brand-800 mb-1">Special Delivery Notes (Optional)</label>
               <textarea
-                name="notes" rows={2}
+                name="notes"
+                rows={2}
                 placeholder="Gate color, landmark near the house, preferred calling time..."
-                value={formData.notes} onChange={handleChange}
+                value={formData.notes}
+                onChange={handleChange}
                 disabled={stage !== 'form'}
                 className="w-full text-xs bg-brand-50/60 border border-brand-200 rounded-xl py-2 px-3 text-brand-950 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:bg-white disabled:opacity-60"
               />
@@ -404,11 +422,11 @@ export default function CheckoutPage() {
                 {otpSending ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    Sending Verification Code…
+                    Sending SMS Verification Code…
                   </>
                 ) : (
                   <>
-                    <Mail className="w-4 h-4" />
+                    <Smartphone className="w-4 h-4" />
                     Place Your Order
                   </>
                 )}
@@ -419,7 +437,11 @@ export default function CheckoutPage() {
             {stage === 'otp' && (
               <button
                 type="button"
-                onClick={() => { setStage('form'); setOtpError(''); setOtpSuccess(''); }}
+                onClick={() => {
+                  setStage('form');
+                  setOtpError('');
+                  setOtpSuccess('');
+                }}
                 className="w-full py-3 rounded-2xl text-xs font-semibold uppercase tracking-wider text-brand-700 border border-brand-300 hover:bg-brand-50 transition-all"
               >
                 ← Edit Details
@@ -443,7 +465,8 @@ export default function CheckoutPage() {
                     <Image
                       src={item.product.images[0] || '/logo.png'}
                       alt={item.product.name}
-                      fill className="object-cover"
+                      fill
+                      className="object-cover"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -477,7 +500,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* ── OTP Verification Panel (appears after "Place Your Order") ── */}
+          {/* ── OTP Verification Panel (appears below "Your Items" after "Place Your Order") ── */}
           {(stage === 'otp' || stage === 'placing') && (
             <div
               ref={otpRef}
@@ -486,13 +509,13 @@ export default function CheckoutPage() {
               {/* Header */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-[#C5A059]/10 text-[#C5A059] flex items-center justify-center flex-shrink-0">
-                  <Lock className="w-5 h-5" />
+                  <Smartphone className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-serif text-base font-bold text-brand-950">Email Verification</h3>
+                  <h3 className="font-serif text-base font-bold text-brand-950">Phone SMS Verification</h3>
                   <p className="text-[11px] text-brand-500 leading-snug">
-                    Enter the 6-digit code sent to<br />
-                    <span className="font-semibold text-brand-800">{formData.email}</span>
+                    Enter the 6-digit code sent via SMS to<br />
+                    <span className="font-semibold text-brand-800">{formData.phone}</span>
                   </p>
                 </div>
               </div>
@@ -500,16 +523,18 @@ export default function CheckoutPage() {
               {/* Success notice */}
               {otpSuccess && (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
-                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <Smartphone className="w-4 h-4 flex-shrink-0" />
                   <span>{otpSuccess}</span>
                 </div>
               )}
 
-              {/* Dev mode: code shown on-screen when Gmail not yet configured */}
+              {/* Dev mode banner: shown when SMS gateway is not connected */}
               {devCode && (
                 <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="font-bold uppercase tracking-wide text-[10px] text-amber-700">⚠ Dev Mode — Email not connected</p>
+                    <p className="font-bold uppercase tracking-wide text-[10px] text-amber-700">
+                      ⚠ DEV MODE — SMS GATEWAY NOT CONNECTED
+                    </p>
                     <button
                       type="button"
                       onClick={() => setOtpCode(devCode)}
@@ -519,10 +544,13 @@ export default function CheckoutPage() {
                     </button>
                   </div>
                   <p className="text-sm">
-                    Verification code: <span className="font-mono font-bold text-xl tracking-widest text-[#22201E] ml-1 bg-white px-2 py-0.5 rounded border border-amber-200">{devCode}</span>
+                    Verification code:{' '}
+                    <span className="font-mono font-bold text-xl tracking-widest text-[#22201E] ml-1 bg-white px-2 py-0.5 rounded border border-amber-200">
+                      {devCode}
+                    </span>
                   </p>
                   <p className="text-[10px] text-amber-700 leading-relaxed">
-                    To send this code directly to your email inbox, add your Google App Password to <code className="bg-amber-100 px-1 py-0.5 rounded">.env.local</code>.
+                    To deliver live SMS messages to mobile devices, add your SMS Gateway credentials (Notify.lk or Twilio) to <code className="bg-amber-100 px-1 py-0.5 rounded">.env.local</code>.
                   </p>
                 </div>
               )}
@@ -581,7 +609,7 @@ export default function CheckoutPage() {
                   className="text-xs text-brand-500 hover:text-brand-800 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
                 >
                   <RefreshCw className="w-3 h-3" />
-                  {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Didn't receive it? Resend"}
+                  {resendCooldown > 0 ? `Resend SMS in ${resendCooldown}s` : "Didn't receive SMS? Resend"}
                 </button>
               </div>
             </div>

@@ -56,3 +56,134 @@
   transform: translateY(-2px);
   box-shadow: 0 12px 30px -8px rgba(45, 30, 23, 0.08);
 }
+
+
+/* ── Subtle Zen Background Animations ── */
+@keyframes zenDriftSlow {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(-35px, 25px, 0) scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(20px, -20px, 0) scale(0.96);
+    opacity: 0.9;
+  }
+}
+
+@keyframes zenDriftReverse {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate3d(30px, -35px, 0) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-20px, 20px, 0) scale(0.95);
+    opacity: 0.85;
+  }
+}
+
+@keyframes zenPulse {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate3d(-15px, -15px, 0) scale(1.06);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(15px, 10px, 0) scale(0.98);
+    opacity: 0.6;
+  }
+}
+
+@keyframes moteFloat1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translate3d(20px, -35px, 0);
+    opacity: 0.7;
+  }
+}
+
+@keyframes moteFloat2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translate3d(-25px, -45px, 0);
+    opacity: 0.65;
+  }
+}
+
+@keyframes moteFloat3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate3d(30px, -25px, 0);
+    opacity: 0.8;
+  }
+}
+
+@keyframes moteFloat4 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translate3d(-18px, -50px, 0);
+    opacity: 0.6;
+  }
+}
+
+.animate-zen-drift-slow {
+  animation: zenDriftSlow 18s ease-in-out infinite alternate;
+}
+
+.animate-zen-drift-reverse {
+  animation: zenDriftReverse 22s ease-in-out infinite alternate;
+}
+
+.animate-zen-pulse {
+  animation: zenPulse 15s ease-in-out infinite alternate;
+}
+
+.animate-mote-1 {
+  animation: moteFloat1 19s ease-in-out infinite;
+}
+
+.animate-mote-2 {
+  animation: moteFloat2 24s ease-in-out infinite;
+}
+
+.animate-mote-3 {
+  animation: moteFloat3 22s ease-in-out infinite;
+}
+
+.animate-mote-4 {
+  animation: moteFloat4 27s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-zen-drift-slow,
+  .animate-zen-drift-reverse,
+  .animate-zen-pulse,
+  .animate-mote-1,
+  .animate-mote-2,
+  .animate-mote-3,
+  .animate-mote-4 {
+    animation: none !important;
+  }
+}

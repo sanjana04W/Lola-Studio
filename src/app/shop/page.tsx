@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Product, Category } from '@/types';
 import { getProducts, getCategories } from '@/services/storeService';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from '@/lib/initialData';
@@ -9,6 +9,7 @@ import ProductCard from '@/components/product/ProductCard';
 import { Search, Filter, SlidersHorizontal, Sparkles, Check } from 'lucide-react';
 
 function ShopContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'all';
   const initialSearch = searchParams.get('search') || '';
@@ -34,11 +35,27 @@ function ShopContent() {
   }, []);
 
   useEffect(() => {
-    const cat = searchParams.get('category');
-    if (cat) setSelectedCategory(cat);
-    const search = searchParams.get('search');
-    if (search) setSearchTerm(search);
+    const cat = searchParams.get('category') || 'all';
+    setSelectedCategory(cat);
+    const search = searchParams.get('search') || '';
+    setSearchTerm(search);
   }, [searchParams]);
+
+  const handleCategorySelect = (categorySlug: string) => {
+    setSelectedCategory(categorySlug);
+    setSelectedSubcategory('all');
+
+    const params = new URLSearchParams(searchParams ? searchParams.toString() : '');
+    if (categorySlug === 'all') {
+      params.delete('category');
+    } else {
+      params.set('category', categorySlug);
+    }
+
+    const newQuery = params.toString();
+    const newUrl = newQuery ? `/shop?${newQuery}` : '/shop';
+    router.push(newUrl, { scroll: false });
+  };
 
   // Current category's subcategories
   const currentCategoryObj = categories.find((c) => c.slug === selectedCategory);
@@ -99,10 +116,7 @@ function ShopContent() {
         {/* Category Pills */}
         <div className="flex items-center justify-center gap-2 overflow-x-auto pb-2">
           <button
-            onClick={() => {
-              setSelectedCategory('all');
-              setSelectedSubcategory('all');
-            }}
+            onClick={() => handleCategorySelect('all')}
             className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider transition-all ${
               selectedCategory === 'all'
                 ? 'bg-brand-900 text-white shadow-soft'
@@ -114,10 +128,7 @@ function ShopContent() {
           {categories.map((c) => (
             <button
               key={c.id}
-              onClick={() => {
-                setSelectedCategory(c.slug);
-                setSelectedSubcategory('all');
-              }}
+              onClick={() => handleCategorySelect(c.slug)}
               className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider transition-all ${
                 selectedCategory === c.slug
                   ? 'bg-brand-900 text-white shadow-soft'
