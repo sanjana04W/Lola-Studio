@@ -6,9 +6,9 @@ import { Sparkles, ArrowRight, ShieldCheck, Truck, Award } from 'lucide-react';
 export default function HeroBanner() {
   return (
     <section className="relative overflow-hidden bg-[#F7F4EE] pt-8 pb-16 lg:pt-16 lg:pb-24 border-b border-brand-100">
-      {/* Background Subtle Gradient Accents (Larger Animated Zen Drift) */}
-      <div className="absolute top-0 right-0 -mr-28 -mt-28 w-[32rem] h-[32rem] sm:w-[42rem] sm:h-[42rem] rounded-full bg-[#C5A059]/20 blur-3xl pointer-events-none animate-zen-drift-slow" />
-      <div className="absolute bottom-0 left-0 -ml-28 -mb-28 w-[28rem] h-[28rem] sm:w-[38rem] sm:h-[38rem] rounded-full bg-brand-300/40 blur-3xl pointer-events-none animate-zen-drift-reverse" />
+      {/* Background Subtle Gradient Accents (Animated Zen Drift) */}
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-[#C5A059]/15 blur-3xl pointer-events-none animate-zen-drift-slow" />
+      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-brand-300/35 blur-3xl pointer-events-none animate-zen-drift-reverse" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
